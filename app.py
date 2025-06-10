@@ -2,31 +2,37 @@ import streamlit as st
 import re
 import pandas as pd # Import pandas
 
+# --- Streamlit App Configuration (MUST BE THE FIRST STREAMLIT COMMAND) ---
+st.set_page_config(
+    page_title="📚 M1 Past Paper Questions Generator 📊",
+    layout="wide",
+    initial_sidebar_state="expanded" # Keep sidebar expanded by default
+)
+
 # --- Data Loading (from CSV) ---
 DATA_FILE = "questions.csv"
 
 @st.cache_data # Cache the data loading for better performance
 def load_data(file_path):
-    st.info(f"Attempting to load data from: {file_path}") # Debugging message
+    # Debugging messages within the cached function will only show on first run or cache clear
+    st.info(f"Attempting to load data from: {file_path}") 
     try:
         df = pd.read_csv(file_path)
-        st.info(f"Successfully read {len(df)} rows from {file_path}.") # Debugging message
+        st.info(f"Successfully read {len(df)} rows from {file_path}.") 
         
-        # Convert DataFrame rows to a list of dictionaries for easier filtering later
         documents = df.to_dict(orient='records')
         
-        # Also ensure 'year' is an integer for slider functionality
         for doc in documents:
             if 'year' in doc:
                 try:
                     doc['year'] = int(doc['year'])
                 except ValueError:
                     st.error(f"Error: 'year' value '{doc['year']}' in CSV is not an integer. Please check your data.")
-                    return [] # Stop loading if year is invalid
+                    return [] 
             else:
                 st.error("Error: 'year' column is missing in the CSV file. Please ensure it exists.")
-                return [] # Stop loading if year column is missing
-        st.success("Data loaded and parsed successfully!") # Debugging message
+                return [] 
+        st.success("Data loaded and parsed successfully!") 
         return documents
     except FileNotFoundError:
         st.error(f"**Error: The data file '{file_path}' was not found.**")
@@ -52,6 +58,7 @@ def load_data(file_path):
         st.error(f"An unexpected error occurred while loading the data file: {e}")
         return []
 
+# Call load_data AFTER st.set_page_config()
 simulated_documents = load_data(DATA_FILE)
 
 # --- Handle case where no data is loaded ---
@@ -59,12 +66,6 @@ if not simulated_documents:
     st.warning("No questions loaded. Please resolve the errors above and ensure `questions.csv` is correctly set up.")
     st.stop() # Stop the app if no data is available
 
-# --- Streamlit App Configuration ---
-st.set_page_config(
-    page_title="📚 M1 Past Paper Questions Generator 📊",
-    layout="wide",
-    initial_sidebar_state="expanded" # Keep sidebar expanded by default
-)
 
 # --- Helper function to render content with LaTeX ---
 def render_content_with_latex(content_string):
@@ -149,12 +150,9 @@ st.session_state.initial_sections_set = True
 st.sidebar.subheader("Select Years")
 # Get the range of years from your loaded data for the slider
 # Ensure these are only calculated if simulated_documents is not empty
-if simulated_documents:
-    min_year = min(doc["year"] for doc in simulated_documents)
-    max_year = max(doc["year"] for doc in simulated_documents)
-else:
-    min_year = 2000 # Fallback default if no data
-    max_year = 2025 # Fallback default if no data
+# min_year and max_year are guaranteed to be from loaded data now
+min_year = min(doc["year"] for doc in simulated_documents)
+max_year = max(doc["year"] for doc in simulated_documents)
 
 selected_years = st.sidebar.slider(
     "Year Range of Questions",
@@ -187,19 +185,19 @@ if st.session_state.search_triggered:
 
     # --- Filtering Logic ---
     filtered_documents = []
-    if simulated_documents: # Only filter if data was loaded successfully
-        for doc in simulated_documents:
-            # Check if topic matches
-            topic_match = doc["topic"] in selected_topics
+    # No need to check simulated_documents here as it's handled by st.stop() earlier
+    for doc in simulated_documents:
+        # Check if topic matches
+        topic_match = doc["topic"] in selected_topics
 
-            # Check if section matches
-            section_match = doc["section"] in selected_sections
+        # Check if section matches
+        section_match = doc["section"] in selected_sections
 
-            # Check if year is within the selected range
-            year_match = selected_years[0] <= doc["year"] <= selected_years[1]
+        # Check if year is within the selected range
+        year_match = selected_years[0] <= doc["year"] <= selected_years[1]
 
-            if topic_match and section_match and year_match:
-                filtered_documents.append(doc)
+        if topic_match and section_match and year_match:
+            filtered_documents.append(doc)
 
     # --- Display Results ---
     if filtered_documents:
@@ -211,7 +209,7 @@ if st.session_state.search_triggered:
                 # Call the new rendering function
                 render_content_with_latex(doc["content"])
     else:
-        st.warning("No questions found matching your selected criteria. Please adjust your filters, or check if any data is available.")
+        st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
 st.markdown("---")
 st.info("💡 Tip: Adjust filters in the sidebar and click 'Generate Questions' to refresh the results.")
