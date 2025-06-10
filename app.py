@@ -23,7 +23,7 @@ simulated_documents = [
 
 # --- Streamlit App Configuration ---
 st.set_page_config(
-    page_title="📚 M1 Past Paper Questions Generator 📊",
+    page_title="� M1 Past Paper Questions Generator 📊",
     layout="wide",
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
@@ -89,43 +89,20 @@ else:
 
 
 # --- Years Filter ---
-# Use columns to place 'Select All Years' next to the subheader with smaller font
-col1_year_header, col2_year_select_all = st.sidebar.columns([0.7, 0.3])
-col1_year_header.subheader("Select Years")
-select_all_years = col2_year_select_all.checkbox(
-    "<small>Select All</small>",
-    key="select_all_years_cb",
-    value=st.session_state.get("select_all_years_cb", False), # Maintain state
-    help="Select all available years",
-    unsafe_allow_html=True # Allows rendering <small> tag in label
-)
+st.sidebar.subheader("Select Years") # Removed columns for "Select All Years" checkbox
 
 min_year = min(doc["year"] for doc in simulated_documents)
 max_year = max(doc["year"] for doc in simulated_documents)
-
-# Determine the initial value for the slider based on "Select All Years"
-if "years_slider_value" not in st.session_state:
-    st.session_state.years_slider_value = (min_year, max_year)
-
-# If "Select All Years" is checked, force the slider's value to the full range
-if select_all_years:
-    st.session_state.years_slider_value = (min_year, max_year)
-    st.sidebar.markdown("<small style='color: gray;'>Slider is fixed to full range when 'Select All' is checked.</small>", unsafe_allow_html=True)
     
 selected_years = st.sidebar.slider(
     "Year Range of Questions",
     min_value=min_year,
     max_value=max_year,
-    # Use the session state value, which is updated by "select_all_years" or user interaction
-    value=st.session_state.years_slider_value, 
+    value=(min_year, max_year), # Default to full range
     step=1,
     key="years_slider",
-    disabled=select_all_years # Disable the slider if "Select All Years" is checked
+    disabled=False # Slider is always enabled as "Select All Years" is removed
 )
-
-# Important: If "Select All Years" is unchecked, make sure the slider's value is allowed to change.
-# This is handled by Streamlit's natural re-run and widget state management.
-# The `selected_years` variable already holds the current slider value, which is what we need for filtering.
 
 st.sidebar.info(f"Currently selected year range: **{selected_years[0]} - {selected_years[1]}**")
 
