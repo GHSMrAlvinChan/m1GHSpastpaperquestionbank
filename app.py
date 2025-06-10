@@ -9,13 +9,13 @@ import streamlit as st
 simulated_documents = [
     {"topic": "A", "level": 1, "year": 2020, "content": "Question 1: Derive the equations of motion for a particle under constant acceleration. (Topic A, Level 1, 2020)"},
     {"topic": "A", "level": 2, "year": 2021, "content": "Question 2: A block of mass 'm' is pulled along a rough horizontal surface by a force 'F' at an angle 'theta' to the horizontal. Calculate the acceleration of the block. (Topic A, Level 2, 2021)"},
-    {"topic": "A", "level": 3, "year": 2022, "content": "Question 3: A particle moves in a straight line such that its velocity 'v' at time 't' is given by v = 3t^2 - 6t. Find the total distance travelled by the particle in the first 3 seconds. (Topic A, Level 3, 2022)"},
+    {"topic": "A", "level": 2, "year": 2022, "content": "Question 3: A particle moves in a straight line such that its velocity 'v' at time 't' is given by v = 3t^2 - 6t. Find the total distance travelled by the particle in the first 3 seconds. (Topic A, Level 3, 2022)"},
     {"topic": "B", "level": 1, "year": 2019, "content": "Question 4: State Newton's three laws of motion. (Topic B, Level 1, 2019)"},
     {"topic": "B", "level": 2, "year": 2020, "content": "Question 5: A force of (3i + 4j) N acts on a particle. Find the magnitude of this force. (Topic B, Level 2, 2020)"},
-    {"topic": "B", "level": 3, "year": 2023, "content": "Question 6: Two particles, P and Q, are moving towards each other along a straight line. Given their initial velocities and the coefficient of restitution, calculate their velocities after impact. (Topic B, Level 3, 2023)"},
+    {"topic": "B", "level": 2, "year": 2023, "content": "Question 6: Two particles, P and Q, are moving towards each other along a straight line. Given their initial velocities and the coefficient of restitution, calculate their velocities after impact. (Topic B, Level 3, 2023)"},
     {"topic": "C", "level": 1, "year": 2021, "content": "Question 7: Define momentum and impulse. (Topic C, Level 1, 2021)"},
-    {"topic": "C", "level": 2, "year": 2022, "content": "Question 8: A bullet of mass 'm' is fired into a block of mass 'M' which is initially at rest. The bullet becomes embedded in the block. Calculate the common velocity of the bullet and block immediately after impact. (Topic C, Level 2, 2022)"},
-    {"topic": "C", "level": 3, "year": 2024, "content": "Question 9: A car of mass 1200 kg is travelling up a hill inclined at an angle 'alpha' to the horizontal. The engine produces a constant power P. Given the resistance to motion, find the maximum speed the car can attain. (Topic C, Level 3, 2024)"},
+    {"topic": "C", "level": 1, "year": 2022, "content": "Question 8: A bullet of mass 'm' is fired into a block of mass 'M' which is initially at rest. The bullet becomes embedded in the block. Calculate the common velocity of the bullet and block immediately after impact. (Topic C, Level 2, 2022)"},
+    {"topic": "C", "level": 2, "year": 2024, "content": "Question 9: A car of mass 1200 kg is travelling up a hill inclined at an angle 'alpha' to the horizontal. The engine produces a constant power P. Given the resistance to motion, find the maximum speed the car can attain. (Topic C, Level 3, 2024)"},
     {"topic": "A", "level": 1, "year": 2021, "content": "Question 10: Illustrate the difference between speed and velocity with examples. (Topic A, Level 1, 2021)"},
     {"topic": "B", "level": 1, "year": 2021, "content": "Question 11: Explain the concept of weightlessness in orbit. (Topic B, Level 1, 2021)"},
     {"topic": "C", "level": 2, "year": 2023, "content": "Question 12: A ball is thrown vertically upwards from the ground with an initial speed of U m/s. Find the time taken to reach its maximum height. (Topic C, Level 2, 2023)"},
@@ -40,14 +40,12 @@ if st.sidebar.checkbox("Topic B (Forces & Newton's Laws)"):
 if st.sidebar.checkbox("Topic C (Momentum & Energy)"):
     selected_topics.append("C")
 
-st.sidebar.subheader("Select Difficulty Levels")
+st.sidebar.subheader("Select Section")
 selected_levels = []
-if st.sidebar.checkbox("Level 1 (Basic)", value=True): # Default selected
+if st.sidebar.checkbox("Section A: Elementary Short Questions", value=True): # Default selected
     selected_levels.append(1)
-if st.sidebar.checkbox("Level 2 (Intermediate)"):
+if st.sidebar.checkbox("Section B: Long Questions"):
     selected_levels.append(2)
-if st.sidebar.checkbox("Level 3 (Advanced)"):
-    selected_levels.append(3)
 
 st.sidebar.subheader("Select Years")
 # Get the range of years from your simulated data for the slider
