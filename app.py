@@ -19,6 +19,7 @@ simulated_documents = [
     {"topic": "A", "level": 1, "year": 2021, "content": "Question 10: Illustrate the difference between speed and velocity with examples. (Topic A, Level 1, 2021)"},
     {"topic": "B", "level": 1, "year": 2021, "content": "Question 11: Explain the concept of weightlessness in orbit. (Topic B, Level 1, 2021)"},
     {"topic": "C", "level": 2, "year": 2023, "content": "Question 12: A ball is thrown vertically upwards from the ground with an initial speed of U m/s. Find the time taken to reach its maximum height. (Topic C, Level 2, 2023)"},
+    {"topic": "D", "level": 1, "year": 2021, "content": "This is a trial question"},
 ]
 
 # --- Streamlit App Configuration ---
@@ -33,12 +34,14 @@ st.sidebar.header("Filter Questions")
 
 st.sidebar.subheader("Select Topics")
 selected_topics = []
-if st.sidebar.checkbox("Topic A (Kinematics)", value=True): # Default selected
+if st.sidebar.checkbox("Binomial Expansions", value=True): # Default selected
     selected_topics.append("A")
-if st.sidebar.checkbox("Topic B (Forces & Newton's Laws)"):
+if st.sidebar.checkbox("Exponential and Logarithmic Functions"):
     selected_topics.append("B")
-if st.sidebar.checkbox("Topic C (Momentum & Energy)"):
+if st.sidebar.checkbox("Limits"):
     selected_topics.append("C")
+if st.sidebar.checkbox("Differentiation and its Application"):
+    selected_topics.append("D")
 
 st.sidebar.subheader("Select Section")
 selected_levels = []
