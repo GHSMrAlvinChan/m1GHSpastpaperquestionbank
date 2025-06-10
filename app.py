@@ -7,46 +7,46 @@ import streamlit as st
 
 # Each dictionary represents a 'document' or 'text file' with its associated metadata
 simulated_documents = [
-    {"topic": "A", "level": 1, "year": 2020, "content": "Document 1: Introduction to Topic A, focusing on fundamental concepts for Level 1, as taught in the year 2020."},
-    {"topic": "A", "level": 2, "year": 2021, "content": "Document 2: Advanced theories in Topic A. This content covers more complex ideas suitable for Level 2, updated in 2021."},
-    {"topic": "A", "level": 3, "year": 2022, "content": "Document 3: Cutting-edge research in Topic A. Designed for Level 3 experts, reflecting 2022's latest findings."},
-    {"topic": "B", "level": 1, "year": 2019, "content": "Document 4: Basics of Topic B. Practical skills for beginners at Level 1, from 2019."},
-    {"topic": "B", "level": 2, "year": 2020, "content": "Document 5: Applied methodologies in Topic B. Intermediate concepts for Level 2, developed in 2020."},
-    {"topic": "B", "level": 3, "year": 2023, "content": "Document 6: Strategic implementations in Topic B. High-level analysis for Level 3, released in 2023."},
-    {"topic": "C", "level": 1, "year": 2021, "content": "Document 7: Core principles of Topic C. Foundational knowledge for Level 1, from 2021."},
-    {"topic": "C", "level": 2, "year": 2022, "content": "Document 8: Analytical techniques in Topic C. Suitable for Level 2, published in 2022."},
-    {"topic": "C", "level": 3, "year": 2024, "content": "Document 9: Future directions in Topic C. Very advanced material for Level 3, hot off the press from 2024."},
-    {"topic": "A", "level": 1, "year": 2021, "content": "Document 10: Supplemental material for Topic A, Level 1. This covers additional examples from 2021."},
-    {"topic": "B", "level": 1, "year": 2021, "content": "Document 11: Another introductory text for Topic B, Level 1, published in 2021."},
-    {"topic": "C", "level": 2, "year": 2023, "content": "Document 12: Case studies for Topic C, Level 2, from 2023."},
+    {"topic": "A", "level": 1, "year": 2020, "content": "Question 1: Derive the equations of motion for a particle under constant acceleration. (Topic A, Level 1, 2020)"},
+    {"topic": "A", "level": 2, "year": 2021, "content": "Question 2: A block of mass 'm' is pulled along a rough horizontal surface by a force 'F' at an angle 'theta' to the horizontal. Calculate the acceleration of the block. (Topic A, Level 2, 2021)"},
+    {"topic": "A", "level": 3, "year": 2022, "content": "Question 3: A particle moves in a straight line such that its velocity 'v' at time 't' is given by v = 3t^2 - 6t. Find the total distance travelled by the particle in the first 3 seconds. (Topic A, Level 3, 2022)"},
+    {"topic": "B", "level": 1, "year": 2019, "content": "Question 4: State Newton's three laws of motion. (Topic B, Level 1, 2019)"},
+    {"topic": "B", "level": 2, "year": 2020, "content": "Question 5: A force of (3i + 4j) N acts on a particle. Find the magnitude of this force. (Topic B, Level 2, 2020)"},
+    {"topic": "B", "level": 3, "year": 2023, "content": "Question 6: Two particles, P and Q, are moving towards each other along a straight line. Given their initial velocities and the coefficient of restitution, calculate their velocities after impact. (Topic B, Level 3, 2023)"},
+    {"topic": "C", "level": 1, "year": 2021, "content": "Question 7: Define momentum and impulse. (Topic C, Level 1, 2021)"},
+    {"topic": "C", "level": 2, "year": 2022, "content": "Question 8: A bullet of mass 'm' is fired into a block of mass 'M' which is initially at rest. The bullet becomes embedded in the block. Calculate the common velocity of the bullet and block immediately after impact. (Topic C, Level 2, 2022)"},
+    {"topic": "C", "level": 3, "year": 2024, "content": "Question 9: A car of mass 1200 kg is travelling up a hill inclined at an angle 'alpha' to the horizontal. The engine produces a constant power P. Given the resistance to motion, find the maximum speed the car can attain. (Topic C, Level 3, 2024)"},
+    {"topic": "A", "level": 1, "year": 2021, "content": "Question 10: Illustrate the difference between speed and velocity with examples. (Topic A, Level 1, 2021)"},
+    {"topic": "B", "level": 1, "year": 2021, "content": "Question 11: Explain the concept of weightlessness in orbit. (Topic B, Level 1, 2021)"},
+    {"topic": "C", "level": 2, "year": 2023, "content": "Question 12: A ball is thrown vertically upwards from the ground with an initial speed of U m/s. Find the time taken to reach its maximum height. (Topic C, Level 2, 2023)"},
 ]
 
 # --- Streamlit App Configuration ---
 st.set_page_config(
-    page_title="M1 Past Paper Questions Generator",
+    page_title="M1 Past Paper Questions Generator", # NEW: Changed page title
     layout="wide",
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
 
 # --- Sidebar for Filters ---
-st.sidebar.header("Filter Content")
+st.sidebar.header("Filter Questions")
 
 st.sidebar.subheader("Select Topics")
 selected_topics = []
-if st.sidebar.checkbox("Topic A", value=True): # Default selected
+if st.sidebar.checkbox("Topic A (Kinematics)", value=True): # Default selected
     selected_topics.append("A")
-if st.sidebar.checkbox("Topic B"):
+if st.sidebar.checkbox("Topic B (Forces & Newton's Laws)"):
     selected_topics.append("B")
-if st.sidebar.checkbox("Topic C"):
+if st.sidebar.checkbox("Topic C (Momentum & Energy)"):
     selected_topics.append("C")
 
-st.sidebar.subheader("Select Levels")
+st.sidebar.subheader("Select Difficulty Levels")
 selected_levels = []
-if st.sidebar.checkbox("Level 1", value=True): # Default selected
+if st.sidebar.checkbox("Level 1 (Basic)", value=True): # Default selected
     selected_levels.append(1)
-if st.sidebar.checkbox("Level 2"):
+if st.sidebar.checkbox("Level 2 (Intermediate)"):
     selected_levels.append(2)
-if st.sidebar.checkbox("Level 3"):
+if st.sidebar.checkbox("Level 3 (Advanced)"):
     selected_levels.append(3)
 
 st.sidebar.subheader("Select Years")
@@ -54,7 +54,7 @@ st.sidebar.subheader("Select Years")
 min_year = min(doc["year"] for doc in simulated_documents)
 max_year = max(doc["year"] for doc in simulated_documents)
 selected_years = st.sidebar.slider(
-    "Number of Years (Range)",
+    "Year Range of Questions",
     min_value=min_year,
     max_value=max_year,
     value=(min_year, max_year), # Default to full range
@@ -64,14 +64,15 @@ st.sidebar.info(f"Selected Year Range: {selected_years[0]} - {selected_years[1]}
 
 
 # --- Main Content Area ---
-st.title("📚 M1 Past Paper Questions Generator")
+st.title("M1 Past Paper Questions Generator") # NEW: Changed main title
 st.markdown("""
-Use the filters in the sidebar to dynamically search and display relevant text content.
-This app simulates extracting information from various documents based on your criteria.
+Welcome to the **M1 Past Paper Questions Generator**! Use the filters in the sidebar to dynamically
+select and display relevant past paper questions based on specific topics, difficulty levels, and
+years. This helps you focus your revision effectively.
 """)
 
 # Button to trigger search explicitly (Streamlit also re-runs on widget changes)
-if st.button("Apply Filters and Search"):
+if st.button("Generate Questions"): # NEW: Changed button text
     st.session_state.search_triggered = True
 
 # Initialize search_triggered state if not present
@@ -79,7 +80,7 @@ if 'search_triggered' not in st.session_state:
     st.session_state.search_triggered = False
 
 if st.session_state.search_triggered:
-    st.header("Search Results")
+    st.header("Generated Questions")
 
     # --- Filtering Logic ---
     filtered_documents = []
@@ -98,20 +99,30 @@ if st.session_state.search_triggered:
 
     # --- Display Results ---
     if filtered_documents:
-        st.success(f"Found {len(filtered_documents)} document(s) matching your criteria:")
+        st.success(f"Found {len(filtered_documents)} question(s) matching your criteria:")
         for i, doc in enumerate(filtered_documents):
             with st.expander(f"**Topic: {doc['topic']} | Level: {doc['level']} | Year: {doc['year']}**"):
+                st.markdown(f"**Question {i+1}:**") # Add a question number
                 st.write(doc["content"])
                 # You could add a download button for each document here if they were actual files
-                # For example:
-                # st.download_button(
-                #     label=f"Download Doc {i+1}",
-                #     data=doc["content"],
-                #     file_name=f"document_{doc['topic']}_{doc['level']}_{doc['year']}_{i+1}.txt",
-                #     mime="text/plain"
-                # )
     else:
-        st.warning("No documents found matching your selected criteria. Please adjust your filters.")
+        st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
 st.markdown("---")
-st.info("💡 Tip: Changes to the filters in the sidebar will automatically re-run the search (or click 'Apply Filters and Search').")
+st.info("💡 Tip: Adjust filters in the sidebar and click 'Generate Questions' to refresh the results.")
+
+```
+
+### 2. Create `.streamlit/config.toml`
+
+Create a folder named `.streamlit` (with the leading dot) in the root of your GitHub repository. Inside that folder, create a file named `config.toml` with the following content:
+
+```toml
+
+```toml
+[theme]
+primaryColor="#007bff"           # A vibrant blue for interactive elements (buttons, sliders, etc.)
+backgroundColor="#e0f2f7"       # Light blue for the main background
+secondaryBackgroundColor="#cceeff" # Slightly darker blue for sidebar, containers, etc.
+textColor="#333333"              # Dark grey for text
+font="sans serif"
