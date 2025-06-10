@@ -49,13 +49,11 @@ st.sidebar.header("Filter Questions")
 # Use columns to place 'Select All Topics' next to the subheader with smaller font
 col1_topic_header, col2_topic_select_all = st.sidebar.columns([0.7, 0.3])
 col1_topic_header.subheader("Select Topics")
-# Removed 'value=st.session_state.get("select_all_topics_cb", False)' from here
-# Streamlit will now manage the state of 'select_all_topics_cb' directly using the key.
 select_all_topics = col2_topic_select_all.checkbox(
     "<small>Select All</small>",
     key="select_all_topics_cb",
-    help="Select all available topics",
-    unsafe_allow_html=True # Allows rendering <small> tag in label
+    help="Select all available topics"
+    # Removed unsafe_allow_html=True as it's not supported for st.checkbox
 )
 
 all_possible_topics = ["A", "B", "C"]
@@ -78,12 +76,11 @@ else:
 # Use columns to place 'Select All Sections' next to the subheader with smaller font
 col1_section_header, col2_section_select_all = st.sidebar.columns([0.7, 0.3])
 col1_section_header.subheader("Select Section") # Updated subheader
-# Removed 'value=st.session_state.get("select_all_sections_cb", False)' from here
 select_all_sections = col2_section_select_all.checkbox(
     "<small>Select All</small>",
     key="select_all_sections_cb",
-    help="Select all available sections",
-    unsafe_allow_html=True # Allows rendering <small> tag in label
+    help="Select all available sections"
+    # Removed unsafe_allow_html=True as it's not supported for st.checkbox
 )
 
 all_possible_sections_display = [
