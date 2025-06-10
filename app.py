@@ -93,7 +93,10 @@ def render_content_with_latex(content_string):
             if current_markdown_buffer:
                 st.markdown("".join(current_markdown_buffer))
                 current_markdown_buffer = [] # Reset buffer
-            st.latex(part[2:-2]) # Render display math as a block
+            
+            latex_expression = part[2:-2].strip() # Get content, strip whitespace
+            st.markdown(f"**DEBUG: st.latex received:** `{latex_expression}`") # Debug print to show what st.latex gets
+            st.latex(latex_expression) # Render display math as a block
         elif part.startswith('$') and part.endswith('$'):
             # Add inline math to the markdown buffer
             current_markdown_buffer.append(part)
