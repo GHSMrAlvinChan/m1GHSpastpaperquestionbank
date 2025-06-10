@@ -4,7 +4,7 @@ import pandas as pd # Import pandas
 
 # --- Streamlit App Configuration (MUST BE THE FIRST STREAMLIT COMMAND) ---
 st.set_page_config(
-    page_title="📚 M1 Past Paper Questions Generator �",
+    page_title="📚 M1 Past Paper Questions Generator 📊",
     layout="wide",
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
@@ -14,11 +14,11 @@ DATA_FILE = "questions.csv"
 
 @st.cache_data # Cache the data loading for better performance
 def load_data(file_path):
-    # Debugging messages within the cached function will only show on first run or cache clear
-    st.info(f"Attempting to load data from: {file_path}") 
+    # These messages will now go to the console/logs
+    print(f"Attempting to load data from: {file_path}") 
     try:
         df = pd.read_csv(file_path)
-        st.info(f"Successfully read {len(df)} rows from {file_path}.") 
+        print(f"Successfully read {len(df)} rows from {file_path}.") 
         
         documents = df.to_dict(orient='records')
         
@@ -32,7 +32,7 @@ def load_data(file_path):
             else:
                 st.error("Error: 'year' column is missing in the CSV file. Please ensure it exists.")
                 return [] 
-        st.success("Data loaded and parsed successfully!") 
+        print("Data loaded and parsed successfully!") 
         return documents
     except FileNotFoundError:
         st.error(f"**Error: The data file '{file_path}' was not found.**")
@@ -103,7 +103,6 @@ def render_content_with_latex(content_string):
             latex_expression = latex_expression.replace('\\_', '_')
             # --- End Preprocessing ---
 
-            # st.markdown(f"**DEBUG: st.latex received:** `{latex_expression}`") # Removed debug print
             st.latex(latex_expression) # Render display math as a block
         elif part.startswith('$') and part.endswith('$'):
             # Add inline math to the markdown buffer
