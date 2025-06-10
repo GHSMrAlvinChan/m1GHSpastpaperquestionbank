@@ -130,7 +130,7 @@ for topic_code in unique_topics:
         "B": "Exponential and Logarithmic Functions",
         "C": "Limits",
         "D": "Differentiation and its Application",
-        "E": "Integration and its Application"
+        "E": "Integration and its Application",
     }
     display_name = topic_display_name_map.get(topic_code, f"Topic {topic_code}")
     # Set default value for topic checkboxes. For simplicity, defaulting "A" to True, others to False
