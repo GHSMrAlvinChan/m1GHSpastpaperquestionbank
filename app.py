@@ -7,30 +7,56 @@ DATA_FILE = "questions.csv"
 
 @st.cache_data # Cache the data loading for better performance
 def load_data(file_path):
+    st.info(f"Attempting to load data from: {file_path}") # Debugging message
     try:
         df = pd.read_csv(file_path)
+        st.info(f"Successfully read {len(df)} rows from {file_path}.") # Debugging message
+        
         # Convert DataFrame rows to a list of dictionaries for easier filtering later
-        # Also ensure 'year' is an integer for slider functionality
         documents = df.to_dict(orient='records')
+        
+        # Also ensure 'year' is an integer for slider functionality
         for doc in documents:
             if 'year' in doc:
-                doc['year'] = int(doc['year'])
+                try:
+                    doc['year'] = int(doc['year'])
+                except ValueError:
+                    st.error(f"Error: 'year' value '{doc['year']}' in CSV is not an integer. Please check your data.")
+                    return [] # Stop loading if year is invalid
+            else:
+                st.error("Error: 'year' column is missing in the CSV file. Please ensure it exists.")
+                return [] # Stop loading if year column is missing
+        st.success("Data loaded and parsed successfully!") # Debugging message
         return documents
     except FileNotFoundError:
-        st.error(f"Error: The data file '{file_path}' was not found. Please ensure it's in the same directory as app.py.")
+        st.error(f"**Error: The data file '{file_path}' was not found.**")
+        st.markdown("Please ensure `questions.csv` is in the **same directory** as your `app.py` file in your GitHub repository.")
+        st.markdown("You might need to: ")
+        st.markdown("1. Go to your GitHub repository.")
+        st.markdown("2. Check the file list to confirm `questions.csv` exists at the root.")
+        st.markdown("3. If you changed its name or location, update `DATA_FILE` in `app.py` accordingly.")
         return []
     except pd.errors.EmptyDataError:
-        st.error(f"Error: The data file '{file_path}' is empty. Please add data to it.")
+        st.error(f"**Error: The data file '{file_path}' is empty.**")
+        st.markdown("Please add data to `questions.csv` with the correct column headers (`topic,section,year,content`).")
+        return []
+    except pd.errors.ParserError as e:
+        st.error(f"**Error parsing CSV file:** {e}")
+        st.markdown("Please check `questions.csv` for formatting issues (e.g., unclosed quotes, wrong delimiter, extra commas).")
+        return []
+    except KeyError as e:
+        st.error(f"**Error: Missing expected column in CSV file:** {e}")
+        st.markdown("Please ensure `questions.csv` has the columns: `topic`, `section`, `year`, `content`.")
         return []
     except Exception as e:
-        st.error(f"An error occurred while loading the data file: {e}")
+        st.error(f"An unexpected error occurred while loading the data file: {e}")
         return []
 
 simulated_documents = load_data(DATA_FILE)
 
 # --- Handle case where no data is loaded ---
 if not simulated_documents:
-    st.warning("No questions loaded. Please check your 'questions.csv' file.")
+    st.warning("No questions loaded. Please resolve the errors above and ensure `questions.csv` is correctly set up.")
     st.stop() # Stop the app if no data is available
 
 # --- Streamlit App Configuration ---
@@ -95,8 +121,12 @@ for topic_code in unique_topics:
         "D": "Differentiation and its Application"
     }
     display_name = topic_display_name_map.get(topic_code, f"Topic {topic_code}")
-    if st.sidebar.checkbox(display_name, value=(topic_code == "A")): # Default select 'A' for example
+    # Set default value for topic checkboxes. For simplicity, defaulting "A" to True, others to False
+    default_checked = (topic_code == "A" and not st.session_state.get('initial_topics_set', False)) 
+    if st.sidebar.checkbox(display_name, value=default_checked, key=f"topic_cb_{topic_code}"):
         selected_topics.append(topic_code)
+# Set a flag once initial topic checkboxes are set to prevent them from resetting on re-runs
+st.session_state.initial_topics_set = True
 
 
 st.sidebar.subheader("Select Section")
@@ -109,14 +139,23 @@ for section_code in unique_sections:
         "A": "Section A: Elementary Short Questions",
         "B": "Section B: Long Questions"
     }.get(section_code, f"Section {section_code}")
-    if st.sidebar.checkbox(section_display_name, value=(section_code == "A")): # Default select 'A' for example
+    # Set default value for section checkboxes. For simplicity, defaulting "A" to True, others to False
+    default_checked = (section_code == "A" and not st.session_state.get('initial_sections_set', False))
+    if st.sidebar.checkbox(section_display_name, value=default_checked, key=f"section_cb_{section_code}"):
         selected_sections.append(section_code)
+st.session_state.initial_sections_set = True
 
 
 st.sidebar.subheader("Select Years")
 # Get the range of years from your loaded data for the slider
-min_year = min(doc["year"] for doc in simulated_documents)
-max_year = max(doc["year"] for doc in simulated_documents)
+# Ensure these are only calculated if simulated_documents is not empty
+if simulated_documents:
+    min_year = min(doc["year"] for doc in simulated_documents)
+    max_year = max(doc["year"] for doc in simulated_documents)
+else:
+    min_year = 2000 # Fallback default if no data
+    max_year = 2025 # Fallback default if no data
+
 selected_years = st.sidebar.slider(
     "Year Range of Questions",
     min_value=min_year,
@@ -148,18 +187,19 @@ if st.session_state.search_triggered:
 
     # --- Filtering Logic ---
     filtered_documents = []
-    for doc in simulated_documents:
-        # Check if topic matches
-        topic_match = doc["topic"] in selected_topics
+    if simulated_documents: # Only filter if data was loaded successfully
+        for doc in simulated_documents:
+            # Check if topic matches
+            topic_match = doc["topic"] in selected_topics
 
-        # Check if section matches
-        section_match = doc["section"] in selected_sections
+            # Check if section matches
+            section_match = doc["section"] in selected_sections
 
-        # Check if year is within the selected range
-        year_match = selected_years[0] <= doc["year"] <= selected_years[1]
+            # Check if year is within the selected range
+            year_match = selected_years[0] <= doc["year"] <= selected_years[1]
 
-        if topic_match and section_match and year_match:
-            filtered_documents.append(doc)
+            if topic_match and section_match and year_match:
+                filtered_documents.append(doc)
 
     # --- Display Results ---
     if filtered_documents:
@@ -171,7 +211,7 @@ if st.session_state.search_triggered:
                 # Call the new rendering function
                 render_content_with_latex(doc["content"])
     else:
-        st.warning("No questions found matching your selected criteria. Please adjust your filters.")
+        st.warning("No questions found matching your selected criteria. Please adjust your filters, or check if any data is available.")
 
 st.markdown("---")
 st.info("💡 Tip: Adjust filters in the sidebar and click 'Generate Questions' to refresh the results.")
