@@ -33,6 +33,12 @@ def load_data(file_path):
                 st.error("Error: 'year' column is missing in the CSV file. Please ensure it exists.")
                 return [] 
         print("Data loaded and parsed successfully!") 
+        
+        # --- DEBUG PRINT FOR UNIQUE TOPICS ---
+        current_unique_topics = sorted(list(set(d["topic"] for d in documents)))
+        print(f"DEBUG: Unique topics found in loaded data: {current_unique_topics}")
+        # --- END DEBUG PRINT ---
+
         return documents
     except FileNotFoundError:
         st.error(f"**Error: The data file '{file_path}' was not found.**")
@@ -130,7 +136,7 @@ for topic_code in unique_topics:
         "B": "Exponential and Logarithmic Functions",
         "C": "Limits",
         "D": "Differentiation and its Application",
-        "E": "Integration and its Application",
+        "E": "Integration and its Application", # This mapping is fine
     }
     display_name = topic_display_name_map.get(topic_code, f"Topic {topic_code}")
     # Set default value for topic checkboxes. For simplicity, defaulting "A" to True, others to False
@@ -221,4 +227,4 @@ if st.session_state.search_triggered:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
 st.markdown("---")
-st.info("💡 Tip: Adjust filters in the sidebar and click 'Generate Questions' to refresh the results.")
+st.info("💡 Tip: Adjust filters in the sidebar and click 'Generate Questions'
