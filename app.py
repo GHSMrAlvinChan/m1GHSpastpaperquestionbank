@@ -74,9 +74,9 @@ def render_content_with_latex(content_string):
     It identifies inline ($...$) and display ($$...$$) math.
     Inline math is rendered using st.markdown (to keep it inline).
     Display math is rendered using st.latex (as a block).
+    Includes preprocessing for common escaping issues.
     """
     # Regex to find display math ($$...$$) and inline math ($...$)
-    # The capturing group () around the pattern makes re.split include the delimiters
     pattern = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
     
     # Split the string by the LaTeX patterns, keeping the delimiters in the list
@@ -95,6 +95,14 @@ def render_content_with_latex(content_string):
                 current_markdown_buffer = [] # Reset buffer
             
             latex_expression = part[2:-2].strip() # Get content, strip whitespace
+            
+            # --- Preprocessing for common escaping issues ---
+            # Replace double backslashes with single backslashes
+            latex_expression = latex_expression.replace('\\\\', '\\')
+            # Replace escaped underscores with unescaped underscores (if needed)
+            latex_expression = latex_expression.replace('\\_', '_')
+            # --- End Preprocessing ---
+
             st.markdown(f"**DEBUG: st.latex received:** `{latex_expression}`") # Debug print to show what st.latex gets
             st.latex(latex_expression) # Render display math as a block
         elif part.startswith('$') and part.endswith('$'):
@@ -153,7 +161,6 @@ st.session_state.initial_sections_set = True
 st.sidebar.subheader("Select Years")
 # Get the range of years from your loaded data for the slider
 # Ensure these are only calculated if simulated_documents is not empty
-# min_year and max_year are guaranteed to be from loaded data now
 min_year = min(doc["year"] for doc in simulated_documents)
 max_year = max(doc["year"] for doc in simulated_documents)
 
