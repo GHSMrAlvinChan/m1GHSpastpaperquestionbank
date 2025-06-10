@@ -36,22 +36,39 @@ st.set_page_config(
 def render_content_with_latex(content_string):
     """
     Renders a string containing mixed text and LaTeX.
-    It identifies inline ($...$) and display ($$...$$) math and uses st.markdown for inline
-    and st.latex for display.
+    It identifies inline ($...$) and display ($$...$$) math.
+    Inline math is rendered using st.markdown (to keep it inline).
+    Display math is rendered using st.latex (as a block).
     """
     # Regex to find display math ($$...$$) and inline math ($...$)
-    # Prioritize display math to avoid issues if $$ is part of inline regex match
-    latex_patterns = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
+    # The capturing group () around the pattern makes re.split include the delimiters
+    pattern = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
     
-    parts = latex_patterns.split(content_string)
+    # Split the string by the LaTeX patterns, keeping the delimiters in the list
+    parts = pattern.split(content_string)
+    
+    current_markdown_buffer = [] # Buffer to accumulate text and inline math for a single st.markdown call
     
     for part in parts:
+        if not part: # Skip any empty strings that might result from split
+            continue
+            
         if part.startswith('$$') and part.endswith('$$'):
-            st.latex(part[2:-2]) # Remove $$ delimiters for st.latex (block math)
+            # If there's content in the markdown buffer, flush it first
+            if current_markdown_buffer:
+                st.markdown("".join(current_markdown_buffer))
+                current_markdown_buffer = [] # Reset buffer
+            st.latex(part[2:-2]) # Render display math as a block
         elif part.startswith('$') and part.endswith('$'):
-            st.markdown(part) # Keep $ delimiters for st.markdown (inline math)
+            # Add inline math to the markdown buffer
+            current_markdown_buffer.append(part)
         else:
-            st.markdown(part) # Regular text
+            # Add regular text to the markdown buffer
+            current_markdown_buffer.append(part)
+            
+    # After iterating through all parts, flush any remaining content in the buffer
+    if current_markdown_buffer:
+        st.markdown("".join(current_markdown_buffer))
 
 
 # --- Sidebar for Filters ---
