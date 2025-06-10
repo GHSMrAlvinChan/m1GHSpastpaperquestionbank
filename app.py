@@ -227,4 +227,4 @@ if st.session_state.search_triggered:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
 st.markdown("---")
-st.info("💡 Tip: Adjust filters in the sidebar and click 'Generate Questions'
+st.info("💡 Tip: Adjust filters in the sidebar and click 'Generate Questions' to refresh the results.")
