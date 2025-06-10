@@ -28,6 +28,20 @@ st.set_page_config(
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
 
+# --- Initialize session state variables for widgets ---
+# This ensures they are set before widgets try to access them
+if "select_all_topics_cb" not in st.session_state:
+    st.session_state.select_all_topics_cb = False
+if "select_all_sections_cb" not in st.session_state:
+    st.session_state.select_all_sections_cb = False
+if "years_slider_value" not in st.session_state:
+    # Need to calculate min_year and max_year for initial slider value
+    min_year = min(doc["year"] for doc in simulated_documents)
+    max_year = max(doc["year"] for doc in simulated_documents)
+    st.session_state.years_slider_value = (min_year, max_year)
+if 'search_triggered' not in st.session_state:
+    st.session_state.search_triggered = False
+
 # --- Sidebar for Filters ---
 st.sidebar.header("Filter Questions")
 
@@ -35,10 +49,11 @@ st.sidebar.header("Filter Questions")
 # Use columns to place 'Select All Topics' next to the subheader with smaller font
 col1_topic_header, col2_topic_select_all = st.sidebar.columns([0.7, 0.3])
 col1_topic_header.subheader("Select Topics")
+# Removed 'value=st.session_state.get("select_all_topics_cb", False)' from here
+# Streamlit will now manage the state of 'select_all_topics_cb' directly using the key.
 select_all_topics = col2_topic_select_all.checkbox(
     "<small>Select All</small>",
     key="select_all_topics_cb",
-    value=st.session_state.get("select_all_topics_cb", False), # Maintain state
     help="Select all available topics",
     unsafe_allow_html=True # Allows rendering <small> tag in label
 )
@@ -63,10 +78,10 @@ else:
 # Use columns to place 'Select All Sections' next to the subheader with smaller font
 col1_section_header, col2_section_select_all = st.sidebar.columns([0.7, 0.3])
 col1_section_header.subheader("Select Section") # Updated subheader
+# Removed 'value=st.session_state.get("select_all_sections_cb", False)' from here
 select_all_sections = col2_section_select_all.checkbox(
     "<small>Select All</small>",
     key="select_all_sections_cb",
-    value=st.session_state.get("select_all_sections_cb", False), # Maintain state
     help="Select all available sections",
     unsafe_allow_html=True # Allows rendering <small> tag in label
 )
@@ -98,7 +113,7 @@ selected_years = st.sidebar.slider(
     "Year Range of Questions",
     min_value=min_year,
     max_value=max_year,
-    value=(min_year, max_year), # Default to full range
+    value=st.session_state.years_slider_value, # Use session state value directly
     step=1,
     key="years_slider",
     disabled=False # Slider is always enabled as "Select All Years" is removed
