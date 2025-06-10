@@ -23,7 +23,7 @@ simulated_documents = [
 
 # --- Streamlit App Configuration ---
 st.set_page_config(
-    page_title="M1 Past Paper Questions Generator", # NEW: Changed page title
+    page_title="📚 M1 Past Paper Questions Generator 📊",
     layout="wide",
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
@@ -31,48 +31,91 @@ st.set_page_config(
 # --- Sidebar for Filters ---
 st.sidebar.header("Filter Questions")
 
+# --- Topics Filter ---
 st.sidebar.subheader("Select Topics")
+all_possible_topics = ["A", "B", "C"]
+select_all_topics = st.sidebar.checkbox("Select All Topics", key="select_all_topics_cb")
+
 selected_topics = []
-if st.sidebar.checkbox("Topic A (Kinematics)", value=True): # Default selected
-    selected_topics.append("A")
-if st.sidebar.checkbox("Topic B (Forces & Newton's Laws)"):
-    selected_topics.append("B")
-if st.sidebar.checkbox("Topic C (Momentum & Energy)"):
-    selected_topics.append("C")
+if select_all_topics:
+    selected_topics = all_possible_topics
+    st.sidebar.markdown("<small style='color: gray;'>Individual checkboxes are selected when 'Select All' is checked.</small>", unsafe_allow_html=True)
+    for topic in all_possible_topics:
+        topic_label = f"Topic {topic} ({'Kinematics' if topic == 'A' else 'Forces & Newton\'s Laws' if topic == 'B' else 'Momentum & Energy'})"
+        st.sidebar.checkbox(topic_label, value=True, disabled=True, key=f"disabled_topic_cb_{topic}")
+else:
+    if st.sidebar.checkbox("Topic A (Kinematics)", value=True, key="topic_a_cb"):
+        selected_topics.append("A")
+    if st.sidebar.checkbox("Topic B (Forces & Newton's Laws)", key="topic_b_cb"):
+        selected_topics.append("B")
+    if st.sidebar.checkbox("Topic C (Momentum & Energy)", key="topic_c_cb"):
+        selected_topics.append("C")
 
-st.sidebar.subheader("Select Difficulty Levels")
-selected_levels = []
-if st.sidebar.checkbox("Level 1 (Basic)", value=True): # Default selected
-    selected_levels.append(1)
-if st.sidebar.checkbox("Level 2 (Intermediate)"):
-    selected_levels.append(2)
-if st.sidebar.checkbox("Level 3 (Advanced)"):
-    selected_levels.append(3)
+# --- Sections Filter (formerly Levels) ---
+st.sidebar.subheader("Select Section") # Updated subheader
+all_possible_sections_display = [
+    "Section A: Elementary Short Questions / Short Questions",
+    "Section B: Long Questions"
+]
+select_all_sections = st.sidebar.checkbox("Select All Sections", key="select_all_sections_cb")
 
+selected_levels_for_filtering = [] # This will store the actual numerical levels (1, 2, 3)
+if select_all_sections:
+    selected_levels_for_filtering = [1, 2, 3] # Select all levels
+    st.sidebar.markdown("<small style='color: gray;'>Individual checkboxes are selected when 'Select All' is checked.</small>", unsafe_allow_html=True)
+    st.sidebar.checkbox(all_possible_sections_display[0], value=True, disabled=True, key="disabled_section_a_cb")
+    st.sidebar.checkbox(all_possible_sections_display[1], value=True, disabled=True, key="disabled_section_b_cb")
+else:
+    if st.sidebar.checkbox(all_possible_sections_display[0], value=True, key="section_a_cb"):
+        selected_levels_for_filtering.append(1) # Section A corresponds to Level 1
+    if st.sidebar.checkbox(all_possible_sections_display[1], key="section_b_cb"):
+        selected_levels_for_filtering.extend([2, 3]) # Section B corresponds to Levels 2 and 3
+
+
+# --- Years Filter ---
 st.sidebar.subheader("Select Years")
-# Get the range of years from your simulated data for the slider
 min_year = min(doc["year"] for doc in simulated_documents)
 max_year = max(doc["year"] for doc in simulated_documents)
+
+select_all_years = st.sidebar.checkbox("Select All Years", key="select_all_years_cb")
+
+# Determine the initial value for the slider based on "Select All Years"
+if "years_slider_value" not in st.session_state:
+    st.session_state.years_slider_value = (min_year, max_year)
+
+# If "Select All Years" is checked, force the slider's value to the full range
+if select_all_years:
+    st.session_state.years_slider_value = (min_year, max_year)
+    st.sidebar.markdown("<small style='color: gray;'>Slider is fixed to full range when 'Select All' is checked.</small>", unsafe_allow_html=True)
+    
 selected_years = st.sidebar.slider(
     "Year Range of Questions",
     min_value=min_year,
     max_value=max_year,
-    value=(min_year, max_year), # Default to full range
-    step=1
+    # Use the session state value, which is updated by "select_all_years" or user interaction
+    value=st.session_state.years_slider_value, 
+    step=1,
+    key="years_slider",
+    disabled=select_all_years # Disable the slider if "Select All Years" is checked
 )
-st.sidebar.info(f"Selected Year Range: {selected_years[0]} - {selected_years[1]}")
+
+# Important: If "Select All Years" is unchecked, make sure the slider's value is allowed to change.
+# This is handled by Streamlit's natural re-run and widget state management.
+# The `selected_years` variable already holds the current slider value, which is what we need for filtering.
+
+st.sidebar.info(f"Currently selected year range: **{selected_years[0]} - {selected_years[1]}**")
 
 
 # --- Main Content Area ---
-st.title("📚​ M1 Past Paper Questions Generator 📊​") # NEW: Changed main title
+st.title("📚 M1 Past Paper Questions Generator 📊") # Updated main title
 st.markdown("""
 Welcome to the **M1 Past Paper Questions Generator**! Use the filters in the sidebar to dynamically
-select and display relevant past paper questions based on specific topics, difficulty levels, and
+select and display relevant past paper questions based on specific topics, sections, and
 years. This helps you focus your revision effectively.
 """)
 
 # Button to trigger search explicitly (Streamlit also re-runs on widget changes)
-if st.button("Generate Questions"): # NEW: Changed button text
+if st.button("Generate Questions"):
     st.session_state.search_triggered = True
 
 # Initialize search_triggered state if not present
@@ -88,8 +131,9 @@ if st.session_state.search_triggered:
         # Check if topic matches
         topic_match = doc["topic"] in selected_topics
 
-        # Check if level matches
-        level_match = doc["level"] in selected_levels
+        # Check if level matches the selected sections
+        # Now filtering based on `selected_levels_for_filtering`
+        level_match = doc["level"] in selected_levels_for_filtering
 
         # Check if year is within the selected range
         year_match = selected_years[0] <= doc["year"] <= selected_years[1]
@@ -101,10 +145,11 @@ if st.session_state.search_triggered:
     if filtered_documents:
         st.success(f"Found {len(filtered_documents)} question(s) matching your criteria:")
         for i, doc in enumerate(filtered_documents):
-            with st.expander(f"**Topic: {doc['topic']} | Level: {doc['level']} | Year: {doc['year']}**"):
-                st.markdown(f"**Question {i+1}:**") # Add a question number
+            # Display level as Section A/B in the expander title for clarity
+            display_section = "Section A" if doc["level"] == 1 else "Section B"
+            with st.expander(f"**Topic: {doc['topic']} | Section: {display_section} | Year: {doc['year']}**"):
+                st.markdown(f"**Question {i+1}:**")
                 st.write(doc["content"])
-                # You could add a download button for each document here if they were actual files
     else:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
