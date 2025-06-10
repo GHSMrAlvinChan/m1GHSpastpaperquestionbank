@@ -32,10 +32,18 @@ st.set_page_config(
 st.sidebar.header("Filter Questions")
 
 # --- Topics Filter ---
-st.sidebar.subheader("Select Topics")
-all_possible_topics = ["A", "B", "C"]
-select_all_topics = st.sidebar.checkbox("Select All Topics", key="select_all_topics_cb")
+# Use columns to place 'Select All Topics' next to the subheader with smaller font
+col1_topic_header, col2_topic_select_all = st.sidebar.columns([0.7, 0.3])
+col1_topic_header.subheader("Select Topics")
+select_all_topics = col2_topic_select_all.checkbox(
+    "<small>Select All</small>",
+    key="select_all_topics_cb",
+    value=st.session_state.get("select_all_topics_cb", False), # Maintain state
+    help="Select all available topics",
+    unsafe_allow_html=True # Allows rendering <small> tag in label
+)
 
+all_possible_topics = ["A", "B", "C"]
 selected_topics = []
 if select_all_topics:
     selected_topics = all_possible_topics
@@ -52,13 +60,21 @@ else:
         selected_topics.append("C")
 
 # --- Sections Filter (formerly Levels) ---
-st.sidebar.subheader("Select Section") # Updated subheader
+# Use columns to place 'Select All Sections' next to the subheader with smaller font
+col1_section_header, col2_section_select_all = st.sidebar.columns([0.7, 0.3])
+col1_section_header.subheader("Select Section") # Updated subheader
+select_all_sections = col2_section_select_all.checkbox(
+    "<small>Select All</small>",
+    key="select_all_sections_cb",
+    value=st.session_state.get("select_all_sections_cb", False), # Maintain state
+    help="Select all available sections",
+    unsafe_allow_html=True # Allows rendering <small> tag in label
+)
+
 all_possible_sections_display = [
-    "Section A: Elementary Short Questions / Short Questions",
+    "Section A: Elementary Short Questions", # Updated text
     "Section B: Long Questions"
 ]
-select_all_sections = st.sidebar.checkbox("Select All Sections", key="select_all_sections_cb")
-
 selected_levels_for_filtering = [] # This will store the actual numerical levels (1, 2, 3)
 if select_all_sections:
     selected_levels_for_filtering = [1, 2, 3] # Select all levels
@@ -73,11 +89,19 @@ else:
 
 
 # --- Years Filter ---
-st.sidebar.subheader("Select Years")
+# Use columns to place 'Select All Years' next to the subheader with smaller font
+col1_year_header, col2_year_select_all = st.sidebar.columns([0.7, 0.3])
+col1_year_header.subheader("Select Years")
+select_all_years = col2_year_select_all.checkbox(
+    "<small>Select All</small>",
+    key="select_all_years_cb",
+    value=st.session_state.get("select_all_years_cb", False), # Maintain state
+    help="Select all available years",
+    unsafe_allow_html=True # Allows rendering <small> tag in label
+)
+
 min_year = min(doc["year"] for doc in simulated_documents)
 max_year = max(doc["year"] for doc in simulated_documents)
-
-select_all_years = st.sidebar.checkbox("Select All Years", key="select_all_years_cb")
 
 # Determine the initial value for the slider based on "Select All Years"
 if "years_slider_value" not in st.session_state:
