@@ -64,7 +64,7 @@ st.sidebar.info(f"Selected Year Range: {selected_years[0]} - {selected_years[1]}
 
 
 # --- Main Content Area ---
-st.title("M1 Past Paper Questions Generator") # NEW: Changed main title
+st.title("📚​ M1 Past Paper Questions Generator 📊​") # NEW: Changed main title
 st.markdown("""
 Welcome to the **M1 Past Paper Questions Generator**! Use the filters in the sidebar to dynamically
 select and display relevant past paper questions based on specific topics, difficulty levels, and
