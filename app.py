@@ -23,7 +23,7 @@ simulated_documents = [
 
 # --- Streamlit App Configuration ---
 st.set_page_config(
-    page_title="Content Filter App",
+    page_title="M1 Past Paper Questions Generator",
     layout="wide",
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
@@ -64,7 +64,7 @@ st.sidebar.info(f"Selected Year Range: {selected_years[0]} - {selected_years[1]}
 
 
 # --- Main Content Area ---
-st.title("📚 Dynamic Content Extractor")
+st.title("📚 M1 Past Paper Questions Generator")
 st.markdown("""
 Use the filters in the sidebar to dynamically search and display relevant text content.
 This app simulates extracting information from various documents based on your criteria.
