@@ -21,8 +21,8 @@ simulated_documents = [
     {"topic": "B", "section": "A", "year": 2021, "content": "Question 11: Explain the concept of weightlessness in orbit. (Topic B, Section A, 2021)"},
     {"topic": "C", "section": "B", "year": 2023, "content": "Question 12: A ball is thrown vertically upwards from the ground with an initial speed of U m/s. Find the time taken to reach its maximum height. (Topic C, Section B, 2023)"},
     {"topic": "D", "section": "A", "year": 2021, "content": "This is a trial question."},
-    # NEW: Document with LaTeX content
-    {"topic": "A", "section": "B", "year": 2025, "content": "Question 13: Consider a particle moving with velocity $v(t) = 2t + 3$. Find its acceleration at $t=2$ seconds. Also, calculate the displacement from $t=0$ to $t=4$ using the integral: $$ s = \\int_0^4 (2t + 3) dt $$ (Topic A, Section B, 2025)"}
+    # Document with LaTeX content, demonstrating both inline and display math
+    {"topic": "A", "section": "B", "year": 2025, "content": "Question 13: Consider a particle moving with velocity $v(t) = 2t + 3$. Find its acceleration at $t=2$ seconds. Also, calculate the displacement from $t=0$ to $t=4$ using the integral: $$ s = \\int_0^4 (2t + 3) dt $$ The final answer should be $s = 28$ units. (Topic A, Section B, 2025)"}
 ]
 
 # --- Streamlit App Configuration ---
@@ -36,27 +36,22 @@ st.set_page_config(
 def render_content_with_latex(content_string):
     """
     Renders a string containing mixed text and LaTeX.
-    It identifies inline ($...$) and display ($$...$$) math and uses st.latex.
-    Basic parsing for demonstration; more complex LaTeX might need a dedicated parser.
+    It identifies inline ($...$) and display ($$...$$) math and uses st.markdown for inline
+    and st.latex for display.
     """
     # Regex to find display math ($$...$$) and inline math ($...$)
-    # This regex is simplified and might not handle all edge cases (e.g., escaped $ signs)
-    # The order of regex matters: find display math first.
+    # Prioritize display math to avoid issues if $$ is part of inline regex match
     latex_patterns = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
     
     parts = latex_patterns.split(content_string)
     
     for part in parts:
         if part.startswith('$$') and part.endswith('$$'):
-            st.latex(part[2:-2]) # Remove $$ delimiters for st.latex
+            st.latex(part[2:-2]) # Remove $$ delimiters for st.latex (block math)
         elif part.startswith('$') and part.endswith('$'):
-            # For inline math, st.latex() typically renders as display math.
-            # For true inline rendering within markdown, you'd need a different approach
-            # like st.markdown(f"text $\\text{{your_latex}}$ text")
-            # For simplicity, we'll use st.latex for both, which places them on new lines.
-            st.latex(part[1:-1]) # Remove $ delimiters
+            st.markdown(part) # Keep $ delimiters for st.markdown (inline math)
         else:
-            st.markdown(part)
+            st.markdown(part) # Regular text
 
 
 # --- Sidebar for Filters ---
