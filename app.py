@@ -119,7 +119,7 @@ def render_content_with_latex(content_string):
 # --- Sidebar for Filters ---
 st.sidebar.header("Filter Questions")
 
-st.sidebar.subheader("Select Topics")
+st.sidebar.subheader("Topic(s)")
 selected_topics = []
 # Dynamic creation of topic checkboxes based on unique topics in the data
 unique_topics = sorted(list(set(doc["topic"] for doc in simulated_documents)))
@@ -129,7 +129,8 @@ for topic_code in unique_topics:
         "A": "Binomial Expansions",
         "B": "Exponential and Logarithmic Functions",
         "C": "Limits",
-        "D": "Differentiation and its Application"
+        "D": "Differentiation and its Application",
+        "E": "Integration and its Application"
     }
     display_name = topic_display_name_map.get(topic_code, f"Topic {topic_code}")
     # Set default value for topic checkboxes. For simplicity, defaulting "A" to True, others to False
@@ -140,8 +141,7 @@ for topic_code in unique_topics:
 st.session_state.initial_topics_set = True
 
 
-st.sidebar.subheader("Select Section")
-# This list will now store "A" or "B" directly
+st.sidebar.subheader("Section(s)")
 selected_sections = []
 # Dynamic creation of section checkboxes based on unique sections in the data
 unique_sections = sorted(list(set(doc["section"] for doc in simulated_documents)))
@@ -157,7 +157,7 @@ for section_code in unique_sections:
 st.session_state.initial_sections_set = True
 
 
-st.sidebar.subheader("Select Years")
+st.sidebar.subheader("Year(s)")
 # Get the range of years from your loaded data for the slider
 # Ensure these are only calculated if simulated_documents is not empty
 min_year = min(doc["year"] for doc in simulated_documents)
