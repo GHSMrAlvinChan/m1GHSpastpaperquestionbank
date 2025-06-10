@@ -23,7 +23,7 @@ simulated_documents = [
 
 # --- Streamlit App Configuration ---
 st.set_page_config(
-    page_title="� M1 Past Paper Questions Generator 📊",
+    page_title="📚 M1 Past Paper Questions Generator 📊",
     layout="wide",
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
