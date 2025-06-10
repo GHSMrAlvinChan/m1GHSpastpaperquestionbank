@@ -1,29 +1,37 @@
 import streamlit as st
 import re
+import pandas as pd # Import pandas
 
-# --- Simulated Data (Replace with actual file loading if needed for deployment) ---
-# In a real scenario, you might load these from a database, a structured file (CSV/JSON),
-# or dynamically read from specific .txt files based on a naming convention.
-# For this example, we'll use an in-memory list of dictionaries.
+# --- Data Loading (from CSV) ---
+DATA_FILE = "questions.csv"
 
-# Each dictionary represents a 'document' or 'text file' with its associated metadata
-simulated_documents = [
-    {"topic": "A", "section": "A", "year": 2020, "content": "Question 1: Derive the equations of motion for a particle under constant acceleration. (Topic A, Section A, 2020)"},
-    {"topic": "A", "section": "B", "year": 2021, "content": "Question 2: A block of mass 'm' is pulled along a rough horizontal surface by a force 'F' at an angle 'theta' to the horizontal. Calculate the acceleration of the block. (Topic A, Section B, 2021)"},
-    {"topic": "A", "section": "B", "year": 2022, "content": "Question 3: A particle moves in a straight line such that its velocity 'v' at time 't' is given by v = 3t^2 - 6t. Find the total distance travelled by the particle in the first 3 seconds. (Topic A, Section B, 2022)"},
-    {"topic": "B", "section": "A", "year": 2019, "content": "Question 4: State Newton's three laws of motion. (Topic B, Section A, 2019)"},
-    {"topic": "B", "section": "B", "year": 2020, "content": "Question 5: A force of (3i + 4j) N acts on a particle. Find the magnitude of this force. (Topic B, Section B, 2020)"},
-    {"topic": "B", "section": "B", "year": 2023, "content": "Question 6: Two particles, P and Q, are moving towards each other along a straight line. Given their initial velocities and the coefficient of restitution, calculate their velocities after impact. (Topic B, Section B, 2023)"},
-    {"topic": "C", "section": "A", "year": 2021, "content": "Question 7: Define momentum and impulse. (Topic C, Section A, 2021)"},
-    {"topic": "C", "section": "B", "year": 2022, "content": "Question 8: A bullet of mass 'm' is fired into a block of mass 'M' which is initially at rest. The bullet becomes embedded in the block. Calculate the common velocity of the bullet and block immediately after impact. (Topic C, Section B, 2022)"},
-    {"topic": "C", "section": "B", "year": 2024, "content": "Question 9: A car of mass 1200 kg is travelling up a hill inclined at an angle 'alpha' to the horizontal. The engine produces a constant power P. Given the resistance to motion, find the maximum speed the car can attain. (Topic C, Section B, 2024)"},
-    {"topic": "A", "section": "A", "year": 2021, "content": "Question 10: Illustrate the difference between speed and velocity with examples. (Topic A, Section A, 2021)"},
-    {"topic": "B", "section": "A", "year": 2021, "content": "Question 11: Explain the concept of weightlessness in orbit. (Topic B, Section A, 2021)"},
-    {"topic": "C", "section": "B", "year": 2023, "content": "Question 12: A ball is thrown vertically upwards from the ground with an initial speed of U m/s. Find the time taken to reach its maximum height. (Topic C, Section B, 2023)"},
-    {"topic": "D", "section": "A", "year": 2021, "content": "This is a trial question."},
-    # Document with LaTeX content, demonstrating both inline and display math
-    {"topic": "A", "section": "B", "year": 2025, "content": "Question 13: Consider a particle moving with velocity $v(t) = 2t + 3$. Find its acceleration at $t=2$ seconds. Also, calculate the displacement from $t=0$ to $t=4$ using the integral: $$ s = \\int_0^4 (2t + 3) dt $$ The final answer should be $s = 28$ units. (Topic A, Section B, 2025)"}
-]
+@st.cache_data # Cache the data loading for better performance
+def load_data(file_path):
+    try:
+        df = pd.read_csv(file_path)
+        # Convert DataFrame rows to a list of dictionaries for easier filtering later
+        # Also ensure 'year' is an integer for slider functionality
+        documents = df.to_dict(orient='records')
+        for doc in documents:
+            if 'year' in doc:
+                doc['year'] = int(doc['year'])
+        return documents
+    except FileNotFoundError:
+        st.error(f"Error: The data file '{file_path}' was not found. Please ensure it's in the same directory as app.py.")
+        return []
+    except pd.errors.EmptyDataError:
+        st.error(f"Error: The data file '{file_path}' is empty. Please add data to it.")
+        return []
+    except Exception as e:
+        st.error(f"An error occurred while loading the data file: {e}")
+        return []
+
+simulated_documents = load_data(DATA_FILE)
+
+# --- Handle case where no data is loaded ---
+if not simulated_documents:
+    st.warning("No questions loaded. Please check your 'questions.csv' file.")
+    st.stop() # Stop the app if no data is available
 
 # --- Streamlit App Configuration ---
 st.set_page_config(
@@ -76,25 +84,37 @@ st.sidebar.header("Filter Questions")
 
 st.sidebar.subheader("Select Topics")
 selected_topics = []
-if st.sidebar.checkbox("Binomial Expansions", value=True): # Default selected
-    selected_topics.append("A")
-if st.sidebar.checkbox("Exponential and Logarithmic Functions"):
-    selected_topics.append("B")
-if st.sidebar.checkbox("Limits"):
-    selected_topics.append("C")
-if st.sidebar.checkbox("Differentiation and its Application"):
-    selected_topics.append("D")
+# Dynamic creation of topic checkboxes based on unique topics in the data
+unique_topics = sorted(list(set(doc["topic"] for doc in simulated_documents)))
+for topic_code in unique_topics:
+    # You'll need a mapping for display names if "A", "B", "C" are not descriptive enough
+    topic_display_name_map = {
+        "A": "Binomial Expansions",
+        "B": "Exponential and Logarithmic Functions",
+        "C": "Limits",
+        "D": "Differentiation and its Application"
+    }
+    display_name = topic_display_name_map.get(topic_code, f"Topic {topic_code}")
+    if st.sidebar.checkbox(display_name, value=(topic_code == "A")): # Default select 'A' for example
+        selected_topics.append(topic_code)
+
 
 st.sidebar.subheader("Select Section")
 # This list will now store "A" or "B" directly
 selected_sections = []
-if st.sidebar.checkbox("Section A: Elementary Short Questions", value=True): # Default selected
-    selected_sections.append("A")
-if st.sidebar.checkbox("Section B: Long Questions"):
-    selected_sections.append("B")
+# Dynamic creation of section checkboxes based on unique sections in the data
+unique_sections = sorted(list(set(doc["section"] for doc in simulated_documents)))
+for section_code in unique_sections:
+    section_display_name = {
+        "A": "Section A: Elementary Short Questions",
+        "B": "Section B: Long Questions"
+    }.get(section_code, f"Section {section_code}")
+    if st.sidebar.checkbox(section_display_name, value=(section_code == "A")): # Default select 'A' for example
+        selected_sections.append(section_code)
+
 
 st.sidebar.subheader("Select Years")
-# Get the range of years from your simulated data for the slider
+# Get the range of years from your loaded data for the slider
 min_year = min(doc["year"] for doc in simulated_documents)
 max_year = max(doc["year"] for doc in simulated_documents)
 selected_years = st.sidebar.slider(
@@ -104,7 +124,7 @@ selected_years = st.sidebar.slider(
     value=(min_year, max_year), # Default to full range
     step=1
 )
-st.sidebar.info(f"Selected Year Range: {selected_years[0]} - {selected_years[1]}")
+st.sidebar.info(f"Selected Year Range: **{selected_years[0]} - {selected_years[1]}**")
 
 
 # --- Main Content Area ---
