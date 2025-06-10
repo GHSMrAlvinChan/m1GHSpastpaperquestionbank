@@ -110,19 +110,3 @@ if st.session_state.search_triggered:
 
 st.markdown("---")
 st.info("💡 Tip: Adjust filters in the sidebar and click 'Generate Questions' to refresh the results.")
-
-```
-
-### 2. Create `.streamlit/config.toml`
-
-Create a folder named `.streamlit` (with the leading dot) in the root of your GitHub repository. Inside that folder, create a file named `config.toml` with the following content:
-
-```toml
-
-```toml
-[theme]
-primaryColor="#007bff"           # A vibrant blue for interactive elements (buttons, sliders, etc.)
-backgroundColor="#e0f2f7"       # Light blue for the main background
-secondaryBackgroundColor="#cceeff" # Slightly darker blue for sidebar, containers, etc.
-textColor="#333333"              # Dark grey for text
-font="sans serif"
