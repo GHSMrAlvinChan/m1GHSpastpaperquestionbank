@@ -179,6 +179,7 @@ min_year = min(doc["year"] for doc in simulated_documents)
 max_year = max(doc["year"] for doc in simulated_documents)
 
 selected_years = st.sidebar.slider(
+    "Range of Years",
     min_value=min_year,
     max_value=max_year,
     value=(min_year, max_year), # Default to full range
