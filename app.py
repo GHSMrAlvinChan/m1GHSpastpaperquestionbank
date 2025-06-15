@@ -80,13 +80,16 @@ def render_content_with_latex(content_string):
     It identifies inline ($...$) and display ($$...$$) math.
     Inline math is rendered using st.markdown (to keep it inline).
     Display math is rendered using st.latex (as a block).
-    Includes preprocessing for common escaping issues.
+    Includes preprocessing for common escaping issues and literal \n.
     """
+    # Preprocess literal '\n' string to actual newline characters
+    processed_content_string = content_string.replace('\\n', '\n')
+
     # Regex to find display math ($$...$$) and inline math ($...$)
     pattern = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
     
     # Split the string by the LaTeX patterns, keeping the delimiters in the list
-    parts = pattern.split(content_string)
+    parts = pattern.split(processed_content_string) # Use the processed string
     
     current_markdown_buffer = [] # Buffer to accumulate text and inline math for a single st.markdown call
     
@@ -103,9 +106,9 @@ def render_content_with_latex(content_string):
             latex_expression = part[2:-2].strip() # Get content, strip whitespace
             
             # --- Preprocessing for common escaping issues ---
-            # Replace double backslashes with single backslashes
+            # Replace double backslashes with single backslashes (for LaTeX commands)
             latex_expression = latex_expression.replace('\\\\', '\\')
-            # Replace escaped underscores with unescaped underscores (if needed)
+            # Replace escaped underscores with unescaped underscores (if needed for LaTeX)
             latex_expression = latex_expression.replace('\\_', '_')
             # --- End Preprocessing ---
 
