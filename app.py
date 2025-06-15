@@ -80,10 +80,10 @@ def render_content_with_latex(content_string):
     It identifies inline ($...$) and display ($$...$$) math.
     Inline math is rendered using st.markdown (to keep it inline).
     Display math is rendered using st.latex (as a block).
-    Includes preprocessing for common escaping issues and literal \n.
+    Includes preprocessing for common escaping issues and a custom newline placeholder.
     """
-    # Preprocess literal '\n' string to actual newline characters
-    processed_content_string = content_string.replace('\\n', '\n')
+    # NEW: Replace custom placeholder with actual newline characters
+    processed_content_string = content_string.replace('[NEWLINE]', '\n')
 
     # Regex to find display math ($$...$$) and inline math ($...$)
     pattern = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
@@ -105,10 +105,9 @@ def render_content_with_latex(content_string):
             
             latex_expression = part[2:-2].strip() # Get content, strip whitespace
             
-            # --- Preprocessing for common escaping issues ---
-            # Replace double backslashes with single backslashes (for LaTeX commands)
+            # --- Preprocessing for common LaTeX escaping issues ---
+            # These are for LaTeX commands themselves, not for general text
             latex_expression = latex_expression.replace('\\\\', '\\')
-            # Replace escaped underscores with unescaped underscores (if needed for LaTeX)
             latex_expression = latex_expression.replace('\\_', '_')
             # --- End Preprocessing ---
 
@@ -133,33 +132,28 @@ selected_topics = []
 # Dynamic creation of topic checkboxes based on unique topics in the data
 unique_topics = sorted(list(set(doc["topic"] for doc in simulated_documents)))
 for topic_code in unique_topics:
-    # You'll need a mapping for display names if "A", "B", "C" are not descriptive enough
     topic_display_name_map = {
         "A": "Binomial Expansions",
         "B": "Exponential and Logarithmic Functions",
         "C": "Limits",
         "D": "Differentiation and its Application",
-        "E": "Integration and its Application", # This mapping is fine
+        "E": "Integration and its Application",
     }
     display_name = topic_display_name_map.get(topic_code, f"Topic {topic_code}")
-    # Set default value for topic checkboxes. For simplicity, defaulting "A" to True, others to False
     default_checked = (topic_code == "A" and not st.session_state.get('initial_topics_set', False)) 
     if st.sidebar.checkbox(display_name, value=default_checked, key=f"topic_cb_{topic_code}"):
         selected_topics.append(topic_code)
-# Set a flag once initial topic checkboxes are set to prevent them from resetting on re-runs
 st.session_state.initial_topics_set = True
 
 
 st.sidebar.subheader("Section(s)")
 selected_sections = []
-# Dynamic creation of section checkboxes based on unique sections in the data
 unique_sections = sorted(list(set(doc["section"] for doc in simulated_documents)))
 for section_code in unique_sections:
     section_display_name = {
         "A": "Section A: Elementary Short Questions",
         "B": "Section B: Long Questions"
     }.get(section_code, f"Section {section_code}")
-    # Set default value for section checkboxes. For simplicity, defaulting "A" to True, others to False
     default_checked = (section_code == "A" and not st.session_state.get('initial_sections_set', False))
     if st.sidebar.checkbox(section_display_name, value=default_checked, key=f"section_cb_{section_code}"):
         selected_sections.append(section_code)
@@ -167,8 +161,6 @@ st.session_state.initial_sections_set = True
 
 
 st.sidebar.subheader("Year(s)")
-# Get the range of years from your loaded data for the slider
-# Ensure these are only calculated if simulated_documents is not empty
 min_year = min(doc["year"] for doc in simulated_documents)
 max_year = max(doc["year"] for doc in simulated_documents)
 
@@ -183,48 +175,36 @@ st.sidebar.info(f"Selected Year Range: **{selected_years[0]} - {selected_years[1
 
 
 # --- Main Content Area ---
-st.title("📚 M1 Past Paper Questions Generator 📊")
+st.title("� M1 Past Paper Questions Generator 📊")
 st.markdown("""
 Welcome to the **M1 Past Paper Questions Generator**! Use the filters in the sidebar to dynamically
 select and display relevant past paper questions based on specific topics, sections, and
 years. This helps you focus your revision effectively.
 """)
 
-# Button to trigger search explicitly (Streamlit also re-runs on widget changes)
 if st.button("Generate Questions"):
     st.session_state.search_triggered = True
 
-# Initialize search_triggered state if not present
 if 'search_triggered' not in st.session_state:
     st.session_state.search_triggered = False
 
 if st.session_state.search_triggered:
     st.header("Generated Questions")
 
-    # --- Filtering Logic ---
     filtered_documents = []
-    # No need to check simulated_documents here as it's handled by st.stop() earlier
     for doc in simulated_documents:
-        # Check if topic matches
         topic_match = doc["topic"] in selected_topics
-
-        # Check if section matches
         section_match = doc["section"] in selected_sections
-
-        # Check if year is within the selected range
         year_match = selected_years[0] <= doc["year"] <= selected_years[1]
 
         if topic_match and section_match and year_match:
             filtered_documents.append(doc)
 
-    # --- Display Results ---
     if filtered_documents:
         st.success(f"Found {len(filtered_documents)} question(s) matching your criteria:")
         for i, doc in enumerate(filtered_documents):
-            # Display section directly from doc["section"]
             with st.expander(f"**Topic: {doc['topic']} | Section: {doc['section']} | Year: {doc['year']}**"):
                 st.markdown(f"**Question {i+1}:**")
-                # Call the new rendering function
                 render_content_with_latex(doc["content"])
     else:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
