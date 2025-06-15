@@ -129,6 +129,11 @@ st.sidebar.subheader("Topic(s)")
 selected_topics = []
 # Dynamic creation of topic checkboxes based on unique topics in the data
 unique_topics = sorted(list(set(doc["topic"] for doc in simulated_documents)))
+
+# Initialize default topic selections only once
+if 'topic_checkbox_states' not in st.session_state:
+    st.session_state.topic_checkbox_states = {topic_code: (topic_code == "A") for topic_code in unique_topics}
+    
 for topic_code in unique_topics:
     topic_display_name_map = {
         "A": "Binomial Expansions",
@@ -138,24 +143,35 @@ for topic_code in unique_topics:
         "E": "Integration and its Application",
     }
     display_name = topic_display_name_map.get(topic_code, f"Topic {topic_code}")
-    default_checked = (topic_code == "A" and not st.session_state.get('initial_topics_set', False)) 
-    if st.sidebar.checkbox(display_name, value=default_checked, key=f"topic_cb_{topic_code}"):
+    
+    # Use the session state to manage the value of the checkbox
+    checkbox_value = st.sidebar.checkbox(display_name, value=st.session_state.topic_checkbox_states.get(topic_code, False), key=f"topic_cb_{topic_code}")
+    st.session_state.topic_checkbox_states[topic_code] = checkbox_value # Update state on interaction
+
+    if checkbox_value:
         selected_topics.append(topic_code)
-st.session_state.initial_topics_set = True
 
 
 st.sidebar.subheader("Section(s)")
 selected_sections = []
 unique_sections = sorted(list(set(doc["section"] for doc in simulated_documents)))
+
+# Initialize default section selections only once
+if 'section_checkbox_states' not in st.session_state:
+    st.session_state.section_checkbox_states = {section_code: (section_code == "A") for section_code in unique_sections}
+
 for section_code in unique_sections:
     section_display_name = {
         "A": "Section A: Elementary Short Questions",
         "B": "Section B: Long Questions"
     }.get(section_code, f"Section {section_code}")
-    default_checked = (section_code == "A" and not st.session_state.get('initial_sections_set', False))
-    if st.sidebar.checkbox(section_display_name, value=default_checked, key=f"section_cb_{section_code}"):
+    
+    # Use the session state to manage the value of the checkbox
+    checkbox_value = st.sidebar.checkbox(section_display_name, value=st.session_state.section_checkbox_states.get(section_code, False), key=f"section_cb_{section_code}")
+    st.session_state.section_checkbox_states[section_code] = checkbox_value # Update state on interaction
+
+    if checkbox_value:
         selected_sections.append(section_code)
-st.session_state.initial_sections_set = True
 
 
 st.sidebar.subheader("Year(s)")
@@ -198,12 +214,8 @@ if st.session_state.search_triggered:
         if topic_match and section_match and year_match:
             filtered_documents.append(doc)
 
-    # --- NEW: Sorting Logic ---
+    # --- Sorting Logic, by year (descending), then topic & section ---
     filtered_documents.sort(key=lambda doc: (-doc['year'], doc['topic'], doc['section']))
-    # Sorting:
-    # -doc['year'] for descending year (e.g., 2025, 2024, ...)
-    # doc['topic'] for ascending topic (e.g., A, B, C, ...)
-    # doc['section'] for ascending section
 
     if filtered_documents:
         st.success(f"Found {len(filtered_documents)} question(s) matching your criteria:")
