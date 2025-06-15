@@ -214,8 +214,8 @@ if st.session_state.search_triggered:
         if topic_match and section_match and year_match:
             filtered_documents.append(doc)
 
-    # --- Sorting Logic, by year (descending), then topic & section ---
-    filtered_documents.sort(key=lambda doc: (-doc['year'], doc['topic'], doc['section']))
+    # --- Sorting Logic, by topic & section, then by year (descending) ---
+    filtered_documents.sort(key=lambda doc: (doc['topic'], doc['section'], -doc['year']))
 
     if filtered_documents:
         st.success(f"Found {len(filtered_documents)} question(s) matching your criteria:")
