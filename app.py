@@ -14,11 +14,11 @@ DATA_FILE = "questions.csv"
 
 @st.cache_data # Cache the data loading for better performance
 def load_data(file_path):
-    # These messages will now go to the console/logs
-    print(f"Attempting to load data from: {file_path}") 
+    # These messages will now be displayed on the web app
+    st.info(f"Attempting to load data from: {file_path}") 
     try:
         df = pd.read_csv(file_path)
-        print(f"Successfully read {len(df)} rows from {file_path}.") 
+        st.info(f"Successfully read {len(df)} rows from {file_path}.") 
         
         documents = df.to_dict(orient='records')
         
@@ -32,11 +32,11 @@ def load_data(file_path):
             else:
                 st.error("Error: 'year' column is missing in the CSV file. Please ensure it exists.")
                 return [] 
-        print("Data loaded and parsed successfully!") 
+        st.info("Data loaded and parsed successfully!") 
         
-        # --- DEBUG PRINT FOR UNIQUE TOPICS ---
+        # --- DEBUG PRINT FOR UNIQUE TOPICS (now st.info) ---
         current_unique_topics = sorted(list(set(d["topic"] for d in documents)))
-        print(f"DEBUG: Unique topics found in loaded data: {current_unique_topics}")
+        st.info(f"DEBUG: Unique topics found in loaded data: {current_unique_topics}")
         # --- END DEBUG PRINT ---
 
         return documents
@@ -83,12 +83,12 @@ def render_content_with_latex(content_string):
     Includes preprocessing for common escaping issues and a custom newline placeholder.
     """
     # NEW DEBUG PRINT: Show the raw string received by the function
-    print(f"DEBUG (render_content_with_latex): Raw content string received: '{content_string}'")
+    st.info(f"DEBUG (render_content_with_latex): Raw content string received: '{content_string}'")
 
     # Replace literal '\n' string to actual newline characters
     # This step is crucial if the CSV parser itself is escaping backslashes.
     processed_content_string = content_string.replace('\\n', '\n')
-    print(f"DEBUG (render_content_with_latex): String after \\n replacement: '{processed_content_string}'") # Debug
+    st.info(f"DEBUG (render_content_with_latex): String after \\n replacement: '{processed_content_string}'") # Debug
 
 
     # Regex to find display math ($$...$$) and inline math ($...$)
