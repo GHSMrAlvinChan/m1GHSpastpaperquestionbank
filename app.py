@@ -75,11 +75,11 @@ def render_content_with_latex(content_string):
     It identifies inline ($...$) and display ($$...$$) math.
     Inline math is rendered using st.markdown (to keep it inline).
     Display math is rendered using st.latex (as a block).
-    Includes preprocessing for common escaping issues and literal \n.
+    Includes preprocessing for common escaping issues and forced newlines.
     """
-    # Replace common escaped newlines and custom placeholder with actual newlines
-    # This ensures '\n' in the Python string becomes a proper newline.
-    processed_content_string = content_string.replace('\\n', '\n').replace('[NEWLINE]', '\n')
+    # Replace common escaped newlines and custom placeholder with a Markdown soft line break ('  \n')
+    # This ensures proper line breaks in the Markdown output.
+    processed_content_string = content_string.replace('\\n', '  \n').replace('[NEWLINE]', '  \n')
 
     # Regex to find display math ($$...$$) and inline math ($...$)
     # The capturing group () around the pattern makes re.split include the delimiters
