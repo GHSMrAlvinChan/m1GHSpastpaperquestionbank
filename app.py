@@ -82,8 +82,14 @@ def render_content_with_latex(content_string):
     Display math is rendered using st.latex (as a block).
     Includes preprocessing for common escaping issues and a custom newline placeholder.
     """
-    # NEW: Replace custom placeholder with actual newline characters
-    processed_content_string = content_string.replace('[NEWLINE]', '\n')
+    # NEW DEBUG PRINT: Show the raw string received by the function
+    print(f"DEBUG (render_content_with_latex): Raw content string received: '{content_string}'")
+
+    # Replace literal '\n' string to actual newline characters
+    # This step is crucial if the CSV parser itself is escaping backslashes.
+    processed_content_string = content_string.replace('\\n', '\n')
+    print(f"DEBUG (render_content_with_latex): String after \\n replacement: '{processed_content_string}'") # Debug
+
 
     # Regex to find display math ($$...$$) and inline math ($...$)
     pattern = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
@@ -106,8 +112,9 @@ def render_content_with_latex(content_string):
             latex_expression = part[2:-2].strip() # Get content, strip whitespace
             
             # --- Preprocessing for common LaTeX escaping issues ---
-            # These are for LaTeX commands themselves, not for general text
+            # Replace double backslashes with single backslashes (for LaTeX commands)
             latex_expression = latex_expression.replace('\\\\', '\\')
+            # Replace escaped underscores with unescaped underscores (if needed for LaTeX)
             latex_expression = latex_expression.replace('\\_', '_')
             # --- End Preprocessing ---
 
@@ -175,7 +182,7 @@ st.sidebar.info(f"Selected Year Range: **{selected_years[0]} - {selected_years[1
 
 
 # --- Main Content Area ---
-st.title("� M1 Past Paper Questions Generator 📊")
+st.title("📚 M1 Past Paper Questions Generator 📊")
 st.markdown("""
 Welcome to the **M1 Past Paper Questions Generator**! Use the filters in the sidebar to dynamically
 select and display relevant past paper questions based on specific topics, sections, and
