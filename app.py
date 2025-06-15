@@ -14,7 +14,7 @@ DATA_FILE = "questions.csv"
 
 @st.cache_data # Cache the data loading for better performance
 def load_data(file_path):
-    # These messages will now be displayed on the web app
+    # These messages will now go to the console/logs
     print(f"Attempting to load data from: {file_path}") 
     try:
         df = pd.read_csv(file_path)
@@ -75,23 +75,18 @@ def render_content_with_latex(content_string):
     It identifies inline ($...$) and display ($$...$$) math.
     Inline math is rendered using st.markdown (to keep it inline).
     Display math is rendered using st.latex (as a block).
-    Includes preprocessing for common escaping issues and a custom newline placeholder.
+    Includes preprocessing for common escaping issues and literal \n.
     """
-    st.info(f"DEBUG (render_content_with_latex): Raw content string received: '{content_string}'")
-
-    # The problem might be that '\n' is being read as '\\n' from CSV by pandas.
-    # We want to replace the literal string '[NEWLINE]' with an actual newline char.
-    # If the CSV parser is being *too* smart, it might turn `\n` in the CSV into a literal `\n` Python string.
-    # Let's try replacing both literal '\n' and our custom placeholder '[NEWLINE]' with actual newlines.
+    # Replace common escaped newlines and custom placeholder with actual newlines
+    # This ensures '\n' in the Python string becomes a proper newline.
     processed_content_string = content_string.replace('\\n', '\n').replace('[NEWLINE]', '\n')
-    st.info(f"DEBUG (render_content_with_latex): String after all replacements: '{processed_content_string}'")
 
     # Regex to find display math ($$...$$) and inline math ($...$)
+    # The capturing group () around the pattern makes re.split include the delimiters
     pattern = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
     
     # Split the string by the LaTeX patterns, keeping the delimiters in the list
     parts = pattern.split(processed_content_string) # Use the processed string
-    st.info(f"DEBUG (render_content_with_latex): Parts after splitting by LaTeX: {parts}")
     
     current_markdown_buffer = [] # Buffer to accumulate text and inline math for a single st.markdown call
     
