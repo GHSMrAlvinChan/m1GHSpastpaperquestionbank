@@ -182,7 +182,7 @@ selected_years = st.sidebar.slider(
     "Range of Years",
     min_value=min_year,
     max_value=max_year,
-    value=(min_year, max_year), # Default to full range
+    value=(max_year - 2, max_year), # Default to past 3 years
     step=1
 )
 st.sidebar.info(f"Selected Year Range: **{selected_years[0]} - {selected_years[1]}**")
