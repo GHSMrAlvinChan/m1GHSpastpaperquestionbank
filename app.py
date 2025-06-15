@@ -199,10 +199,11 @@ if st.session_state.search_triggered:
             filtered_documents.append(doc)
 
     # --- NEW: Sorting Logic ---
-    filtered_documents.sort(key=lambda doc: (-doc['year'], doc['topic']))
+    filtered_documents.sort(key=lambda doc: (-doc['year'], doc['topic'], doc['section']))
     # Sorting:
     # -doc['year'] for descending year (e.g., 2025, 2024, ...)
     # doc['topic'] for ascending topic (e.g., A, B, C, ...)
+    # doc['section'] for ascending section
 
     if filtered_documents:
         st.success(f"Found {len(filtered_documents)} question(s) matching your criteria:")
