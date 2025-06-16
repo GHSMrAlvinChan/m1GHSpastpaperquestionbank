@@ -4,6 +4,7 @@ A,A,2023,"(a) Expand $e^{-3x}$ in ascneding powers of $x$ as far as the term in 
 A,A,2025,"(a) Expand $e^{-3x}$ in ascending powers of $x$ as far as the term in $x^2$.\n(b) If the coefficient of $x^2$ of the expansion of $\dfrac{(1+kx)^5}{e^{3x}}$ is $\dfrac{279}{2}$, where $k$ is an integer, find the value of $k$."
 D,A,2025,"Find the first derivatives of each of the following functions.\n(a) $y=\ln\left(\dfrac{1}{x^5}\right)$\n(b) $y=\log_2[\ln(1+x^2)]$"
 C,A,2007,"This is a trial \nquestion."
+E,A,2007,"This is a trial \nquestion."
 D,A,2023,"Find $\dfrac{dy}{dx}$ of each of the following functions.\n(a) $y=\sqrt[3]{2+\sqrt{3x+1}}$\n(b) $y=\ln\left[(e^{x^2}+3x)^2\right]$"
 B,A,2023,"The number $N$ (in thousand) of visitors to a theme part after $t$ months is given by $N=N_0e^{kt}$, where $N_0$ and $k$ are constants.\n(a) Express $\ln N$ as a linear function of $t$.\n(b) It is given that the slope and the intercept on the vertical axis of the graph of the linear function obtained in (a) are 0.01 and $2\ln 10$ respectively. When $t=t_0$, the number of visitors is $3N_0$.\n(i) Find the exact value of $t_0$.\n(ii) Find the rate of change of the number of visitors to the theme park when $t=t_0$."
 D,B,2023,"It is given that $f(x)=-5x^3+23x^2-12x-1$.\n(a) Find the slope of tangent to the curve $y=f(x)$ at $x=0$.\n(b) If the slope of tangent to the curve $y=f(x)$ at point $A$ is 12, find\n(i) the possible coordinates of $A$;\n(ii) the possible equations of tangents to the curve $y=f(x)$ at $A$."
