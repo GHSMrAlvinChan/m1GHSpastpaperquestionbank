@@ -268,14 +268,18 @@ if st.session_state.search_triggered:
                     st.image(doc['image_url'], caption=f"{doc['year']} - {doc['code']}", use_container_width=True)
 
                 # --- "Show Solution" Button ---
+                # Determine button label based on current state
+                button_label = "Hide Solution" if st.session_state[solution_button_key] else "Show Solution"
+                
                 # Use a unique key for the solution button for each question
-                if st.button("Show Solution", key=f"solution_btn_{doc['code']}_{i}"):
+                if st.button(button_label, key=f"solution_btn_{doc['code']}_{i}"):
                     st.session_state[solution_button_key] = not st.session_state[solution_button_key] # Toggle visibility
 
                 # --- Solution Display Area ---
                 if st.session_state[solution_button_key]:
                     st.markdown("### Solution:")
                     if doc['solution_image_url']:
+                        # Solution image: Use st.columns to control width and center it
                         sol_col_left, sol_col_image, sol_col_right = st.columns([0.15, 0.7, 0.15])
                         with sol_col_image:
                             st.image(doc['solution_image_url'], caption=f"Solution for {doc['year']} - {doc['code']}", use_container_width=True)
