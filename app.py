@@ -4,7 +4,7 @@ import re # Still used for potential string parsing if needed for other features
 
 # --- Streamlit App Configuration (MUST BE THE FIRST STREAMLIT COMMAND) ---
 st.set_page_config(
-    page_title="� M1 Past Paper Questions Generator 📊",
+    page_title="📚 M1 Past Paper Questions Generator 📊",
     layout="wide",
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
@@ -35,21 +35,40 @@ def load_data_from_images(image_folder):
             try:
                 # Expected format: Topic_Section_Year_Code.png
                 # Example: A_C_2025_S4FinalQ4.png
-                parts = filename.split('_')
-                if len(parts) >= 3: # Ensure we have at least topic, section, year
+                # Extract filename without extension for parsing
+                name_without_ext = os.path.splitext(filename)[0]
+                
+                parts = name_without_ext.split('_')
+                if len(parts) >= 4: # Ensure we have at least topic, section, year, and code
                     topic = parts[0]
                     section = parts[1]
                     year = int(parts[2])
+                    code = parts[3] # Extract the code part
                     
                     image_url = os.path.join(image_folder, filename)
                     documents.append({
                         "topic": topic,
                         "section": section,
                         "year": year,
+                        "code": code, # Store the extracted code
+                        "image_url": image_url
+                    })
+                elif len(parts) == 3: # Handle cases like Topic_Section_Year.png (no code)
+                    topic = parts[0]
+                    section = parts[1]
+                    year = int(parts[2])
+                    code = "" # No code found
+                    
+                    image_url = os.path.join(image_folder, filename)
+                    documents.append({
+                        "topic": topic,
+                        "section": section,
+                        "year": year,
+                        "code": code, 
                         "image_url": image_url
                     })
                 else:
-                    print(f"Skipping malformed filename: {filename} (does not match Topic_Section_Year_Code.png format)")
+                    print(f"Skipping malformed filename: {filename} (does not match Topic_Section_Year_Code.png or Topic_Section_Year.png format)")
             except ValueError:
                 print(f"Skipping file due to invalid year in filename: {filename}")
             except IndexError:
@@ -194,11 +213,10 @@ if st.session_state.search_triggered:
             with st.expander(f"**Topic: {doc['topic']} | Section: {doc['section']} | Year: {doc['year']}**"):
                 st.markdown(f"**Question {i+1}:**")
                 # Use st.columns to control image width and center it
-                # Adjust the column ratios [left_padding, image_width, right_padding] as needed
                 col_left_padding, col_image, col_right_padding = st.columns([0.15, 0.7, 0.15]) 
                 with col_image:
-                    # Use use_container_width=True to make it fill its assigned column width
-                    st.image(doc['image_url'], caption=f"Question {i+1} - {doc['topic']} ({doc['section']}), {doc['year']}", use_container_width=True)
+                    # UPDATED CAPTION: Now includes the 'code' part
+                    st.image(doc['image_url'], caption=f"Question {i+1} ({doc['code']}) - {doc['topic']} ({doc['section']}), {doc['year']}", use_container_width=True)
     else:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
