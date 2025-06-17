@@ -284,7 +284,7 @@ if st.session_state.search_triggered:
                     st.markdown("### Solution:")
                     if doc['solution_image_url']:
                         # Solution image: Use st.columns to control width and center it
-                        sol_col_left, sol_col_image, sol_col_right = st.columns([0.15, 0.7, 0.15])
+                        sol_col_left, sol_col_image, sol_col_right = st.columns([0.2, 0.6, 0.2])
                         with sol_col_image:
                             st.image(doc['solution_image_url'], caption=f"Solution for {doc['year']} - {doc['code']}", use_container_width=True)
                     else:
