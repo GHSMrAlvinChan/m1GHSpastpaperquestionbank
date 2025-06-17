@@ -268,12 +268,16 @@ if st.session_state.search_triggered:
                     st.image(doc['image_url'], caption=f"{doc['year']} - {doc['code']}", use_container_width=True)
 
                 # --- "Show Solution" Button ---
-                # Determine button label based on current state
-                button_label = "Hide Solution" if st.session_state[solution_button_key] else "Show Solution"
+                # Callback function to toggle the session state
+                def _toggle_solution_visibility(key):
+                    st.session_state[key] = not st.session_state[key]
+
+                # Determine button label based on current state (before this button click is processed)
+                current_solution_visible = st.session_state.get(solution_button_key, False)
+                button_label = "Hide Solution" if current_solution_visible else "Show Solution"
                 
-                # Use a unique key for the solution button for each question
-                if st.button(button_label, key=f"solution_btn_{doc['code']}_{i}"):
-                    st.session_state[solution_button_key] = not st.session_state[solution_button_key] # Toggle visibility
+                # Render the button with the on_click callback
+                st.button(button_label, key=f"solution_btn_{doc['code']}_{i}", on_click=_toggle_solution_visibility, args=(solution_button_key,))
 
                 # --- Solution Display Area ---
                 if st.session_state[solution_button_key]:
