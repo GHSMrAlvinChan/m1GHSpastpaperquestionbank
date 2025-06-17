@@ -68,16 +68,16 @@ def load_data_from_images(image_folder, solutions_folder):
 
                 question_image_url = os.path.join(image_folder, filename)
                 
-                # Derive solution image path
+                # Derive solution image path based on the NEW convention: YEAR_CODE.png
                 solution_image_url = None
-                if code: # Only look for a solution if a code exists
-                    solution_filename = f"{code}_ans.png" # Assuming all solutions are PNG
+                if year is not None and code: # Only look for a solution if year and code exist
+                    solution_filename = f"{year}_{code}.png" # NEW: Year_Code.png
                     potential_solution_path = os.path.join(solutions_folder, solution_filename)
                     if os.path.exists(potential_solution_path):
                         solution_image_url = potential_solution_path
-                        print(f"Found solution for {code}: {solution_image_url}")
+                        print(f"Found solution for {year}-{code}: {solution_image_url}")
                     else:
-                        print(f"Solution for {code} not found at: {potential_solution_path}")
+                        print(f"Solution for {year}-{code} not found at: {potential_solution_path}")
 
                 documents.append({
                     "topic": topic,
@@ -266,8 +266,6 @@ if st.session_state.search_triggered:
                 with col_image:
                     # Caption is Year - Code
                     st.image(doc['image_url'], caption=f"{doc['year']} - {doc['code']}", use_container_width=True)
-
-                # Removed: st.markdown("---") # Separator for solution section
 
                 # --- "Show Solution" Button ---
                 # Use a unique key for the solution button for each question
