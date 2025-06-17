@@ -192,8 +192,8 @@ if 'sort_by_preference' not in st.session_state:
 if st.button("Generate Questions"):
     st.session_state.search_triggered = True
 
-# Add sorting buttons
-sort_col1, sort_col2, sort_col3 = st.columns(3)
+# Add sorting buttons - Adjusted column ratios to make them closer
+sort_col1, sort_col2, sort_col3, _ = st.columns([0.2, 0.2, 0.2, 0.4]) # 0.4 for empty space
 with sort_col1:
     if st.button("Sort by Year"):
         st.session_state.sort_by_preference = 'year'
