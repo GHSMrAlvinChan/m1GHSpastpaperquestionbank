@@ -195,7 +195,7 @@ if st.session_state.search_triggered:
     filtered_documents = []
     for doc in simulated_documents:
         # Check if selected_topics/selected_sections are empty (meaning nothing is checked)
-        # If no topics are selected, no topic_match. If no sections are selected, no section_match.
+        # If no topics is selected, no topic_match. If no sections are selected, no section_match.
         # This implicitly filters out everything if no checkbox is active.
         topic_match = doc["topic"] in selected_topics
         section_match = doc["section"] in selected_sections
@@ -215,8 +215,8 @@ if st.session_state.search_triggered:
                 # Use st.columns to control image width and center it
                 col_left_padding, col_image, col_right_padding = st.columns([0.15, 0.7, 0.15]) 
                 with col_image:
-                    # UPDATED CAPTION: Only includes the 'code' part
-                    st.image(doc['image_url'], caption=doc['code'], use_container_width=True)
+                    # UPDATED CAPTION: Year - Code
+                    st.image(doc['image_url'], caption=f"{doc['year']} - {doc['code']}", use_container_width=True)
     else:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
