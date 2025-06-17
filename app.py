@@ -185,8 +185,24 @@ select and display relevant past paper questions based on specific topics, secti
 years. This helps you focus your revision effectively.
 """)
 
+# Initialize sorting preference
+if 'sort_by_preference' not in st.session_state:
+    st.session_state.sort_by_preference = 'year' # Default primary sort
+
 if st.button("Generate Questions"):
     st.session_state.search_triggered = True
+
+# Add sorting buttons
+sort_col1, sort_col2, sort_col3 = st.columns(3)
+with sort_col1:
+    if st.button("Sort by Year"):
+        st.session_state.sort_by_preference = 'year'
+with sort_col2:
+    if st.button("Sort by Topic"):
+        st.session_state.sort_by_preference = 'topic'
+with sort_col3:
+    if st.button("Sort by Section"):
+        st.session_state.sort_by_preference = 'section'
 
 if 'search_triggered' not in st.session_state:
     st.session_state.search_triggered = False
@@ -206,8 +222,14 @@ if st.session_state.search_triggered:
         if topic_match and section_match and year_match:
             filtered_documents.append(doc)
 
-    # --- Sorting Logic ---
-    filtered_documents.sort(key=lambda doc: (-doc['year'], doc['topic'], doc['section']))
+    # --- Dynamic Sorting Logic based on preference ---
+    if st.session_state.sort_by_preference == 'year':
+        filtered_documents.sort(key=lambda doc: (-doc['year'], doc['topic'], doc['section']))
+    elif st.session_state.sort_by_preference == 'topic':
+        filtered_documents.sort(key=lambda doc: (doc['topic'], -doc['year'], doc['section']))
+    elif st.session_state.sort_by_preference == 'section':
+        filtered_documents.sort(key=lambda doc: (doc['section'], -doc['year'], doc['topic']))
+
 
     if filtered_documents:
         st.success(f"Found {len(filtered_documents)} question(s) matching your criteria:")
