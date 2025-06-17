@@ -189,31 +189,24 @@ years. This helps you focus your revision effectively.
 if 'sort_by_preference' not in st.session_state:
     st.session_state.sort_by_preference = 'year' # Default primary sort
 
-# Create columns for all buttons to place them on the same line and closer
-btn_col1, btn_col2, btn_col3, btn_col4 = st.columns([0.25, 0.25, 0.25, 0.25]) # Adjust ratios as needed for spacing
-
-with btn_col1:
-    if st.button("Generate Questions"):
-        st.session_state.search_triggered = True
-
-with btn_col2:
-    if st.button("Sort by Year"):
-        st.session_state.sort_by_preference = 'year'
-
-with btn_col3:
-    if st.button("Sort by Topic"):
-        st.session_state.sort_by_preference = 'topic'
-
-with btn_col4:
-    if st.button("Sort by Section"):
-        st.session_state.sort_by_preference = 'section'
-
+# Generate Questions button
+if st.button("Generate Questions"):
+    st.session_state.search_triggered = True
 
 if 'search_triggered' not in st.session_state:
     st.session_state.search_triggered = False
 
 if st.session_state.search_triggered:
     st.header("Generated Questions")
+
+    # Radio buttons for sorting preference, placed below the "Generated Questions" header
+    st.session_state.sort_by_preference = st.radio(
+        "Sort questions primarily by:",
+        ('Year', 'Topic', 'Section'),
+        index=('Year', 'Topic', 'Section').index(st.session_state.sort_by_preference.capitalize()), # Set initial value from session state
+        key='sort_radio_buttons',
+        horizontal=True # Display horizontally to make them closer
+    ).lower() # Convert back to lowercase for internal use
 
     filtered_documents = []
     for doc in simulated_documents:
