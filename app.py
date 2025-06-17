@@ -1,6 +1,6 @@
 import streamlit as st
-import re
-import pandas as pd # Import pandas
+import os # Import os for file system operations
+import re # Still used for potential string parsing if needed for other features
 
 # --- Streamlit App Configuration (MUST BE THE FIRST STREAMLIT COMMAND) ---
 st.set_page_config(
@@ -9,117 +9,91 @@ st.set_page_config(
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
 
-# --- Data Loading (from CSV) ---
-DATA_FILE = "questions.csv"
+# --- Data Loading (from Image Files) ---
+IMAGE_FOLDER = "images/" # Folder where your question images are stored
 
 @st.cache_data # Cache the data loading for better performance
-def load_data(file_path):
-    # These messages will now go to the console/logs
-    print(f"Attempting to load data from: {file_path}") 
+def load_data_from_images(image_folder):
+    print(f"Attempting to load data from images in: {image_folder}")
+    documents = []
+    
+    if not os.path.exists(image_folder):
+        st.error(f"**Error: Image folder '{image_folder}' not found.**")
+        st.markdown("Please ensure the `images/` folder exists in the same directory as your `app.py`.")
+        return []
+
     try:
-        df = pd.read_csv(file_path)
-        print(f"Successfully read {len(df)} rows from {file_path}.") 
+        # List all files in the image folder
+        image_files = [f for f in os.listdir(image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))]
+        print(f"Found {len(image_files)} image files.")
+
+        if not image_files:
+            st.warning(f"No image files found in '{image_folder}'. Please upload your question images.")
+            return []
+
+        for filename in image_files:
+            try:
+                # Expected format: Topic_Section_Year_Code.png
+                # Example: A_C_2025_S4FinalQ4.png
+                parts = filename.split('_')
+                if len(parts) >= 3: # Ensure we have at least topic, section, year
+                    topic = parts[0]
+                    section = parts[1]
+                    year = int(parts[2])
+                    
+                    image_url = os.path.join(image_folder, filename)
+                    documents.append({
+                        "topic": topic,
+                        "section": section,
+                        "year": year,
+                        "image_url": image_url
+                    })
+                else:
+                    print(f"Skipping malformed filename: {filename} (does not match Topic_Section_Year_Code.png format)")
+            except ValueError:
+                print(f"Skipping file due to invalid year in filename: {filename}")
+            except IndexError:
+                print(f"Skipping file due to unexpected filename format: {filename}")
         
-        documents = df.to_dict(orient='records')
-        
-        for doc in documents:
-            if 'year' in doc:
-                try:
-                    doc['year'] = int(doc['year'])
-                except ValueError:
-                    st.error(f"Error: 'year' value '{doc['year']}' in CSV is not an integer. Please check your data.")
-                    return [] 
-            else:
-                st.error("Error: 'year' column is missing in the CSV file. Please ensure it exists.")
-                return [] 
-        print("Data loaded and parsed successfully!") 
-        
+        print("Data loaded from images and parsed successfully!")
         return documents
-    except FileNotFoundError:
-        st.error(f"**Error: The data file '{file_path}' was not found.**")
-        st.markdown("Please ensure `questions.csv` is in the **same directory** as your `app.py` file in your GitHub repository.")
-        st.markdown("You might need to: ")
-        st.markdown("1. Go to your GitHub repository.")
-        st.markdown("2. Check the file list to confirm `questions.csv` exists at the root.")
-        st.markdown("3. If you changed its name or location, update `DATA_FILE` in `app.py` accordingly.")
-        return []
-    except pd.errors.EmptyDataError:
-        st.error(f"**Error: The data file '{file_path}' is empty.**")
-        st.markdown("Please add data to `questions.csv` with the correct column headers (`topic,section,year,content`).")
-        return []
-    except pd.errors.ParserError as e:
-        st.error(f"**Error parsing CSV file:** {e}")
-        st.markdown("Please check `questions.csv` for formatting issues (e.g., unclosed quotes, wrong delimiter, extra commas).")
-        return []
-    except KeyError as e:
-        st.error(f"**Error: Missing expected column in CSV file:** {e}")
-        st.markdown("Please ensure `questions.csv` has the columns: `topic`, `section`, `year`, `content`.")
-        return []
     except Exception as e:
-        st.error(f"An unexpected error occurred while loading the data file: {e}")
+        st.error(f"An unexpected error occurred while loading images: {e}")
         return []
 
-# Call load_data AFTER st.set_page_config()
-simulated_documents = load_data(DATA_FILE)
+simulated_documents = load_data_from_images(IMAGE_FOLDER)
 
-# --- Handle case where no data is loaded ---
+# --- Handle case where no data is loaded (after image parsing) ---
 if not simulated_documents:
-    st.warning("No questions loaded. Please resolve the errors above and ensure `questions.csv` is correctly set up.")
+    st.warning("No questions loaded from images. Please ensure images are in the correct folder and named according to the `Topic_Section_Year_Code.png` format.")
     st.stop() # Stop the app if no data is available
 
 
-# --- Helper function to render content with LaTeX ---
-def render_content_with_latex(content_string):
-    """
-    Renders a string containing mixed text and LaTeX.
-    It identifies inline ($...$) and display ($$...$$) math.
-    Inline math is rendered using st.markdown (to keep it inline).
-    Display math is rendered using st.latex (as a block).
-    Includes preprocessing for common escaping issues and forced newlines.
-    """
-    # Replace common escaped newlines and custom placeholder with a Markdown soft line break ('  \n')
-    # This ensures proper line breaks in the Markdown output.
-    processed_content_string = content_string.replace('\\n', '  \n').replace('[NEWLINE]', '  \n')
-
-    # Regex to find display math ($$...$$) and inline math ($...$)
-    # The capturing group () around the pattern makes re.split include the delimiters
-    pattern = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
-    
-    # Split the string by the LaTeX patterns, keeping the delimiters in the list
-    parts = pattern.split(processed_content_string) # Use the processed string
-    
-    current_markdown_buffer = [] # Buffer to accumulate text and inline math for a single st.markdown call
-    
-    for part in parts:
-        if not part: # Skip any empty strings that might result from split
-            continue
-            
-        if part.startswith('$$') and part.endswith('$$'):
-            # If there's content in the markdown buffer, flush it first
-            if current_markdown_buffer:
-                st.markdown("".join(current_markdown_buffer))
-                current_markdown_buffer = [] # Reset buffer
-            
-            latex_expression = part[2:-2].strip() # Get content, strip whitespace
-            
-            # --- Preprocessing for common LaTeX escaping issues ---
-            # Replace double backslashes with single backslashes (for LaTeX commands)
-            latex_expression = latex_expression.replace('\\\\', '\\')
-            # Replace escaped underscores with unescaped underscores (if needed for LaTeX)
-            latex_expression = latex_expression.replace('\\_', '_')
-            # --- End Preprocessing ---
-
-            st.latex(latex_expression) # Render display math as a block
-        elif part.startswith('$') and part.endswith('$'):
-            # Add inline math to the markdown buffer
-            current_markdown_buffer.append(part)
-        else:
-            # Add regular text to the markdown buffer
-            current_markdown_buffer.append(part)
-            
-    # After iterating through all parts, flush any remaining content in the buffer
-    if current_markdown_buffer:
-        st.markdown("".join(current_markdown_buffer))
+# --- Helper function to render content (removed as questions are images now) ---
+# This function is no longer used for the primary question content (which is now an image).
+# Keeping the definition commented out in case you want to revert or use it for other text elements.
+# def render_content_with_latex(content_string):
+#     processed_content_string = content_string.replace('\\n', '  \n').replace('[NEWLINE]', '  \n')
+#     pattern = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
+#     parts = pattern.split(processed_content_string) 
+#     current_markdown_buffer = [] 
+#     for part in parts:
+#         if not part: 
+#             continue
+#         if part.startswith('$$') and part.endswith('$$'):
+#             if current_markdown_buffer:
+#                 st.markdown("".join(current_markdown_buffer))
+#                 current_markdown_buffer = [] 
+#             latex_expression = part[2:-2].strip() 
+#             latex_expression = latex_expression.replace('\\\\', '\\')
+#             latex_expression = latex_expression.replace('\\_', '_')
+#             st.latex(latex_expression) 
+#         elif part.startswith('$') and part.endswith('$'):
+#             current_markdown_buffer.append(part)
+#         else:
+#             current_markdown_buffer.append(part)
+#     if current_markdown_buffer:
+#         st.markdown("".join(current_markdown_buffer))
 
 
 # --- Sidebar for Filters ---
@@ -127,12 +101,17 @@ st.sidebar.header("Filter Questions")
 
 st.sidebar.subheader("Topic(s)")
 selected_topics = []
-# Dynamic creation of topic checkboxes based on unique topics in the data
+# Dynamic creation of topic checkboxes based on unique topics found in image filenames
 unique_topics = sorted(list(set(doc["topic"] for doc in simulated_documents)))
 
 # Initialize default topic selections only once
 if 'topic_checkbox_states' not in st.session_state:
-    st.session_state.topic_checkbox_states = {topic_code: (topic_code == "A") for topic_code in unique_topics}
+    # Default select 'A' if it exists, otherwise select the first unique topic
+    initial_topic_a_checked = "A" in unique_topics
+    st.session_state.topic_checkbox_states = {
+        topic_code: (topic_code == "A" if initial_topic_a_checked else (topic_code == unique_topics[0] if unique_topics else False))
+        for topic_code in unique_topics
+    }
     
 for topic_code in unique_topics:
     topic_display_name_map = {
@@ -144,9 +123,8 @@ for topic_code in unique_topics:
     }
     display_name = topic_display_name_map.get(topic_code, f"Topic {topic_code}")
     
-    # Use the session state to manage the value of the checkbox
     checkbox_value = st.sidebar.checkbox(display_name, value=st.session_state.topic_checkbox_states.get(topic_code, False), key=f"topic_cb_{topic_code}")
-    st.session_state.topic_checkbox_states[topic_code] = checkbox_value # Update state on interaction
+    st.session_state.topic_checkbox_states[topic_code] = checkbox_value
 
     if checkbox_value:
         selected_topics.append(topic_code)
@@ -154,11 +132,17 @@ for topic_code in unique_topics:
 
 st.sidebar.subheader("Section(s)")
 selected_sections = []
+# Dynamic creation of section checkboxes based on unique sections found in image filenames
 unique_sections = sorted(list(set(doc["section"] for doc in simulated_documents)))
 
 # Initialize default section selections only once
 if 'section_checkbox_states' not in st.session_state:
-    st.session_state.section_checkbox_states = {section_code: (section_code == "A") for section_code in unique_sections}
+    # Default select 'A' if it exists, otherwise select the first unique section
+    initial_section_a_checked = "A" in unique_sections
+    st.session_state.section_checkbox_states = {
+        section_code: (section_code == "A" if initial_section_a_checked else (section_code == unique_sections[0] if unique_sections else False))
+        for section_code in unique_sections
+    }
 
 for section_code in unique_sections:
     section_display_name = {
@@ -166,25 +150,36 @@ for section_code in unique_sections:
         "B": "Section B: Long Questions"
     }.get(section_code, f"Section {section_code}")
     
-    # Use the session state to manage the value of the checkbox
     checkbox_value = st.sidebar.checkbox(section_display_name, value=st.session_state.section_checkbox_states.get(section_code, False), key=f"section_cb_{section_code}")
-    st.session_state.section_checkbox_states[section_code] = checkbox_value # Update state on interaction
+    st.session_state.section_checkbox_states[section_code] = checkbox_value
 
     if checkbox_value:
         selected_sections.append(section_code)
 
 
 st.sidebar.subheader("Year(s)")
+# Get the range of years from your loaded data for the slider
 min_year = min(doc["year"] for doc in simulated_documents)
 max_year = max(doc["year"] for doc in simulated_documents)
+
+# Initialize slider value if not already set, otherwise use existing session state
+if 'years_slider_value' not in st.session_state:
+    # Default to past 3 years if data supports, otherwise full range
+    default_slider_value = (max_year - 2, max_year)
+    if (max_year - 2) < min_year:
+        default_slider_value = (min_year, max_year)
+    st.session_state.years_slider_value = default_slider_value
 
 selected_years = st.sidebar.slider(
     "Range of Years",
     min_value=min_year,
     max_value=max_year,
-    value=(max_year - 2, max_year), # Default to past 3 years
-    step=1
+    value=st.session_state.years_slider_value, # Use session state for persistence
+    step=1,
+    key="years_slider"
 )
+st.session_state.years_slider_value = selected_years # Update session state on slider change
+
 st.sidebar.info(f"Selected Year Range: **{selected_years[0]} - {selected_years[1]}**")
 
 
@@ -207,6 +202,9 @@ if st.session_state.search_triggered:
 
     filtered_documents = []
     for doc in simulated_documents:
+        # Check if selected_topics/selected_sections are empty (meaning nothing is checked)
+        # If no topics are selected, no topic_match. If no sections are selected, no section_match.
+        # This implicitly filters out everything if no checkbox is active.
         topic_match = doc["topic"] in selected_topics
         section_match = doc["section"] in selected_sections
         year_match = selected_years[0] <= doc["year"] <= selected_years[1]
@@ -214,15 +212,18 @@ if st.session_state.search_triggered:
         if topic_match and section_match and year_match:
             filtered_documents.append(doc)
 
-    # --- Sorting Logic, by topic & section, then by year (descending) ---
-    filtered_documents.sort(key=lambda doc: (doc['topic'], doc['section'], -doc['year']))
+    # --- Sorting Logic ---
+    filtered_documents.sort(key=lambda doc: (-doc['year'], doc['topic'], doc['section']))
 
     if filtered_documents:
         st.success(f"Found {len(filtered_documents)} question(s) matching your criteria:")
         for i, doc in enumerate(filtered_documents):
             with st.expander(f"**Topic: {doc['topic']} | Section: {doc['section']} | Year: {doc['year']}**"):
                 st.markdown(f"**Question {i+1}:**")
-                render_content_with_latex(doc["content"])
+                # Display the image using st.image
+                st.image(doc['image_url'], caption=f"Question {i+1} - {doc['topic']} ({doc['section']}), {doc['year']}", use_column_width=True)
+                # Add fallback in case image fails to load (optional, useful for debugging broken links)
+                # st.markdown(f"If image above does not load, please check path: `{doc['image_url']}`")
     else:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
