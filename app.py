@@ -1,6 +1,5 @@
 import streamlit as st
 import os # Import os for file system operations
-import re # Still used for potential string parsing if needed for other features
 
 # --- Streamlit App Configuration (MUST BE THE FIRST STREAMLIT COMMAND) ---
 st.set_page_config(
@@ -9,23 +8,28 @@ st.set_page_config(
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
 
-# --- Data Loading (from Image Files) ---
-IMAGE_FOLDER = "images/" # Folder where your question images are stored
+# --- Data Folders ---
+IMAGE_FOLDER = "images/"    # Folder for question images
+SOLUTIONS_FOLDER = "solutions/" # Folder for solution images
 
 @st.cache_data # Cache the data loading for better performance
-def load_data_from_images(image_folder):
+def load_data_from_images(image_folder, solutions_folder):
     print(f"Attempting to load data from images in: {image_folder}")
     documents = []
     
     if not os.path.exists(image_folder):
-        st.error(f"**Error: Image folder '{image_folder}' not found.**")
+        st.error(f"**Error: Question image folder '{image_folder}' not found.**")
         st.markdown("Please ensure the `images/` folder exists in the same directory as your `app.py`.")
         return []
 
+    # Check for solutions folder existence, but don't error out if it's missing (solutions might be optional)
+    if not os.path.exists(solutions_folder):
+        print(f"Warning: Solution image folder '{solutions_folder}' not found. Solutions will not be loaded.")
+        
     try:
-        # List all files in the image folder
+        # List all files in the question image folder
         image_files = [f for f in os.listdir(image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))]
-        print(f"Found {len(image_files)} image files.")
+        print(f"Found {len(image_files)} question image files.")
 
         if not image_files:
             st.warning(f"No image files found in '{image_folder}'. Please upload your question images.")
@@ -33,54 +37,67 @@ def load_data_from_images(image_folder):
 
         for filename in image_files:
             try:
-                # Expected format: Topic_Section_Year_Code.png
+                # Expected question filename format: Topic_Section_Year_Code.png
                 # Example: A_C_2025_S4FinalQ4.png
+                
                 # Extract filename without extension for parsing
                 name_without_ext = os.path.splitext(filename)[0]
                 
                 parts = name_without_ext.split('_')
-                if len(parts) >= 4: # Ensure we have at least topic, section, year, and code
+                
+                topic = ""
+                section = ""
+                year = None
+                code = ""
+
+                if len(parts) >= 3: 
                     topic = parts[0]
                     section = parts[1]
-                    year = int(parts[2])
-                    code = parts[3] # Extract the code part
-                    
-                    image_url = os.path.join(image_folder, filename)
-                    documents.append({
-                        "topic": topic,
-                        "section": section,
-                        "year": year,
-                        "code": code, # Store the extracted code
-                        "image_url": image_url
-                    })
-                elif len(parts) == 3: # Handle cases like Topic_Section_Year.png (no code)
-                    topic = parts[0]
-                    section = parts[1]
-                    year = int(parts[2])
-                    code = "" # No code found
-                    
-                    image_url = os.path.join(image_folder, filename)
-                    documents.append({
-                        "topic": topic,
-                        "section": section,
-                        "year": year,
-                        "code": code, 
-                        "image_url": image_url
-                    })
+                    try:
+                        year = int(parts[2])
+                    except ValueError:
+                        print(f"Warning: Invalid year '{parts[2]}' in filename: {filename}. Skipping.")
+                        continue # Skip this file if year is not an integer
+
+                    if len(parts) >= 4: # If code part exists
+                        code = parts[3]
+                    # If len(parts) is exactly 3, code remains an empty string as initialized.
                 else:
                     print(f"Skipping malformed filename: {filename} (does not match Topic_Section_Year_Code.png or Topic_Section_Year.png format)")
-            except ValueError:
-                print(f"Skipping file due to invalid year in filename: {filename}")
-            except IndexError:
-                print(f"Skipping file due to unexpected filename format: {filename}")
+                    continue # Skip malformed filenames
+
+                question_image_url = os.path.join(image_folder, filename)
+                
+                # Derive solution image path
+                solution_image_url = None
+                if code: # Only look for a solution if a code exists
+                    solution_filename = f"{code}_ans.png" # Assuming all solutions are PNG
+                    potential_solution_path = os.path.join(solutions_folder, solution_filename)
+                    if os.path.exists(potential_solution_path):
+                        solution_image_url = potential_solution_path
+                        print(f"Found solution for {code}: {solution_image_url}")
+                    else:
+                        print(f"Solution for {code} not found at: {potential_solution_path}")
+
+                documents.append({
+                    "topic": topic,
+                    "section": section,
+                    "year": year,
+                    "code": code,
+                    "image_url": question_image_url,
+                    "solution_image_url": solution_image_url # Store the solution image URL (or None)
+                })
+            except Exception as e:
+                print(f"Error processing filename {filename}: {e}. Skipping.")
+                continue # Continue to next file on error
         
-        print("Data loaded from images and parsed successfully!")
+        print(f"Data loaded from images and parsed successfully. Total questions: {len(documents)}")
         return documents
     except Exception as e:
         st.error(f"An unexpected error occurred while loading images: {e}")
         return []
 
-simulated_documents = load_data_from_images(IMAGE_FOLDER)
+simulated_documents = load_data_from_images(IMAGE_FOLDER, SOLUTIONS_FOLDER)
 
 # --- Handle case where no data is loaded (after image parsing) ---
 if not simulated_documents:
@@ -91,7 +108,7 @@ if not simulated_documents:
 # --- Sidebar for Filters ---
 st.sidebar.header("Filter Questions")
 
-# --- Topic Display Name Mapping (moved here for accessibility by expander title) ---
+# --- Topic Display Name Mapping ---
 TOPIC_DISPLAY_NAME_MAP = {
     "A": "Binomial Expansions",
     "B": "Exponential and Logarithmic Functions",
@@ -189,9 +206,12 @@ years. This helps you focus your revision effectively.
 if 'sort_by_preference' not in st.session_state:
     st.session_state.sort_by_preference = 'year' # Default primary sort
 
-# Generate Questions button
-if st.button("Generate Questions"):
-    st.session_state.search_triggered = True
+# Create columns for the "Generate Questions" button and sorting radio buttons
+btn_generate_col, radio_col_1, radio_col_2, radio_col_3 = st.columns([0.25, 0.25, 0.25, 0.25])
+
+with btn_generate_col:
+    if st.button("Generate Questions"):
+        st.session_state.search_triggered = True
 
 if 'search_triggered' not in st.session_state:
     st.session_state.search_triggered = False
@@ -200,8 +220,9 @@ if st.session_state.search_triggered:
     st.header("Generated Questions")
 
     # Radio buttons for sorting preference, placed below the "Generated Questions" header
+    # Ensure to use a unique key for the radio buttons
     st.session_state.sort_by_preference = st.radio(
-        "Sort Questions by:",
+        "Sort questions primarily by:",
         ('Year', 'Topic', 'Section'),
         index=('Year', 'Topic', 'Section').index(st.session_state.sort_by_preference.capitalize()), # Set initial value from session state
         key='sort_radio_buttons',
@@ -210,9 +231,6 @@ if st.session_state.search_triggered:
 
     filtered_documents = []
     for doc in simulated_documents:
-        # Check if selected_topics/selected_sections are empty (meaning nothing is checked)
-        # If no topics is selected, no topic_match. If no sections are selected, no section_match.
-        # This implicitly filters out everything if no checkbox is active.
         topic_match = doc["topic"] in selected_topics
         section_match = doc["section"] in selected_sections
         year_match = selected_years[0] <= doc["year"] <= selected_years[1]
@@ -235,6 +253,12 @@ if st.session_state.search_triggered:
             # Get the display name for the topic
             display_topic_name = TOPIC_DISPLAY_NAME_MAP.get(doc['topic'], doc['topic'])
             
+            # --- Outer Expander: For the Question ---
+            # Initialize a unique session state key for each question's solution visibility
+            solution_button_key = f"show_solution_{doc['code']}_{doc['year']}_{doc['topic']}_{doc['section']}"
+            if solution_button_key not in st.session_state:
+                st.session_state[solution_button_key] = False
+
             with st.expander(f"**Topic: {display_topic_name} | Section: {doc['section']} | Year: {doc['year']}**"):
                 st.markdown(f"**Question {i+1}:**")
                 # Use st.columns to control image width and center it
@@ -242,6 +266,23 @@ if st.session_state.search_triggered:
                 with col_image:
                     # Caption is Year - Code
                     st.image(doc['image_url'], caption=f"{doc['year']} - {doc['code']}", use_container_width=True)
+
+                st.markdown("---") # Separator for solution section
+
+                # --- "Show Solution" Button ---
+                # Use a unique key for the solution button for each question
+                if st.button("Show Solution", key=f"solution_btn_{doc['code']}_{i}"):
+                    st.session_state[solution_button_key] = not st.session_state[solution_button_key] # Toggle visibility
+
+                # --- Solution Display Area ---
+                if st.session_state[solution_button_key]:
+                    st.markdown("### Solution:")
+                    if doc['solution_image_url']:
+                        sol_col_left, sol_col_image, sol_col_right = st.columns([0.15, 0.7, 0.15])
+                        with sol_col_image:
+                            st.image(doc['solution_image_url'], caption=f"Solution for {doc['year']} - {doc['code']}", use_container_width=True)
+                    else:
+                        st.info("Solution is not yet ready for this question.")
     else:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
