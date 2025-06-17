@@ -215,8 +215,8 @@ if st.session_state.search_triggered:
                 # Use st.columns to control image width and center it
                 col_left_padding, col_image, col_right_padding = st.columns([0.15, 0.7, 0.15]) 
                 with col_image:
-                    # UPDATED CAPTION: Now includes the 'code' part
-                    st.image(doc['image_url'], caption=f"Question {i+1} ({doc['code']}) - {doc['topic']} ({doc['section']}), {doc['year']}", use_container_width=True)
+                    # UPDATED CAPTION: Only includes the 'code' part
+                    st.image(doc['image_url'], caption=doc['code'], use_container_width=True)
     else:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
