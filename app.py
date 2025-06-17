@@ -220,8 +220,8 @@ if st.session_state.search_triggered:
         for i, doc in enumerate(filtered_documents):
             with st.expander(f"**Topic: {doc['topic']} | Section: {doc['section']} | Year: {doc['year']}**"):
                 st.markdown(f"**Question {i+1}:**")
-                # Display the image using st.image
-                st.image(doc['image_url'], caption=f"Question {i+1} - {doc['topic']} ({doc['section']}), {doc['year']}", use_column_width=True)
+                # NEW: Use use_container_width instead of use_column_width
+                st.image(doc['image_url'], caption=f"Question {i+1} - {doc['topic']} ({doc['section']}), {doc['year']}", use_container_width=True)
                 # Add fallback in case image fails to load (optional, useful for debugging broken links)
                 # st.markdown(f"If image above does not load, please check path: `{doc['image_url']}`")
     else:
