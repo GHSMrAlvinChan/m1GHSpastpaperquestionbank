@@ -4,7 +4,7 @@ import re # Still used for potential string parsing if needed for other features
 
 # --- Streamlit App Configuration (MUST BE THE FIRST STREAMLIT COMMAND) ---
 st.set_page_config(
-    page_title="📚 M1 Past Paper Questions Generator 📊",
+    page_title="� M1 Past Paper Questions Generator 📊",
     layout="wide",
     initial_sidebar_state="expanded" # Keep sidebar expanded by default
 )
@@ -193,12 +193,12 @@ if st.session_state.search_triggered:
         for i, doc in enumerate(filtered_documents):
             with st.expander(f"**Topic: {doc['topic']} | Section: {doc['section']} | Year: {doc['year']}**"):
                 st.markdown(f"**Question {i+1}:**")
-                # Use st.columns to control image width, making it 70% of the expander's width
-                col1, col2 = st.columns([0.7, 0.3]) # First column for image (70%), second column for spacing (30%)
-                with col1:
-                    # Use use_container_width=True to make it fill its 70% column width
+                # Use st.columns to control image width and center it
+                # Adjust the column ratios [left_padding, image_width, right_padding] as needed
+                col_left_padding, col_image, col_right_padding = st.columns([0.15, 0.7, 0.15]) 
+                with col_image:
+                    # Use use_container_width=True to make it fill its assigned column width
                     st.image(doc['image_url'], caption=f"Question {i+1} - {doc['topic']} ({doc['section']}), {doc['year']}", use_container_width=True)
-                # No need for the second column (col2) unless you want to put something there
     else:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
