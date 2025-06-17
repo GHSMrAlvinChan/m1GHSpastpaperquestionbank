@@ -69,33 +69,6 @@ if not simulated_documents:
     st.stop() # Stop the app if no data is available
 
 
-# --- Helper function to render content (removed as questions are images now) ---
-# This function is no longer used for the primary question content (which is now an image).
-# Keeping the definition commented out in case you want to revert or use it for other text elements.
-# def render_content_with_latex(content_string):
-#     processed_content_string = content_string.replace('\\n', '  \n').replace('[NEWLINE]', '  \n')
-#     pattern = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
-#     parts = pattern.split(processed_content_string) 
-#     current_markdown_buffer = [] 
-#     for part in parts:
-#         if not part: 
-#             continue
-#         if part.startswith('$$') and part.endswith('$$'):
-#             if current_markdown_buffer:
-#                 st.markdown("".join(current_markdown_buffer))
-#                 current_markdown_buffer = [] 
-#             latex_expression = part[2:-2].strip() 
-#             latex_expression = latex_expression.replace('\\\\', '\\')
-#             latex_expression = latex_expression.replace('\\_', '_')
-#             st.latex(latex_expression) 
-#         elif part.startswith('$') and part.endswith('$'):
-#             current_markdown_buffer.append(part)
-#         else:
-#             current_markdown_buffer.append(part)
-#     if current_markdown_buffer:
-#         st.markdown("".join(current_markdown_buffer))
-
-
 # --- Sidebar for Filters ---
 st.sidebar.header("Filter Questions")
 
@@ -220,10 +193,12 @@ if st.session_state.search_triggered:
         for i, doc in enumerate(filtered_documents):
             with st.expander(f"**Topic: {doc['topic']} | Section: {doc['section']} | Year: {doc['year']}**"):
                 st.markdown(f"**Question {i+1}:**")
-                # NEW: Use use_container_width instead of use_column_width
-                st.image(doc['image_url'], caption=f"Question {i+1} - {doc['topic']} ({doc['section']}), {doc['year']}", use_container_width=True)
-                # Add fallback in case image fails to load (optional, useful for debugging broken links)
-                # st.markdown(f"If image above does not load, please check path: `{doc['image_url']}`")
+                # Use st.columns to control image width, making it 70% of the expander's width
+                col1, col2 = st.columns([0.7, 0.3]) # First column for image (70%), second column for spacing (30%)
+                with col1:
+                    # Use use_container_width=True to make it fill its 70% column width
+                    st.image(doc['image_url'], caption=f"Question {i+1} - {doc['topic']} ({doc['section']}), {doc['year']}", use_container_width=True)
+                # No need for the second column (col2) unless you want to put something there
     else:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
 
