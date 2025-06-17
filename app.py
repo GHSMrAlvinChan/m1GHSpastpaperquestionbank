@@ -267,7 +267,7 @@ if st.session_state.search_triggered:
                     # Caption is Year - Code
                     st.image(doc['image_url'], caption=f"{doc['year']} - {doc['code']}", use_container_width=True)
 
-                st.markdown("---") # Separator for solution section
+                # Removed: st.markdown("---") # Separator for solution section
 
                 # --- "Show Solution" Button ---
                 # Use a unique key for the solution button for each question
