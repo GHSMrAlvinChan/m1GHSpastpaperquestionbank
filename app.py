@@ -262,7 +262,7 @@ if st.session_state.search_triggered:
             with st.expander(f"**Topic: {display_topic_name} | Section: {doc['section']} | Year: {doc['year']}**"):
                 st.markdown(f"**Question {i+1}:**")
                 # Use st.columns to control image width and center it
-                col_left_padding, col_image, col_right_padding = st.columns([0.15, 0.7, 0.15]) 
+                col_left_padding, col_image, col_right_padding = st.columns([0.1, 0.8, 0.1]) 
                 with col_image:
                     # Caption is Year - Code
                     st.image(doc['image_url'], caption=f"{doc['year']} - {doc['code']}", use_container_width=True)
