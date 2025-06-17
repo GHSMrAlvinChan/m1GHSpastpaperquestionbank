@@ -189,20 +189,25 @@ years. This helps you focus your revision effectively.
 if 'sort_by_preference' not in st.session_state:
     st.session_state.sort_by_preference = 'year' # Default primary sort
 
-if st.button("Generate Questions"):
-    st.session_state.search_triggered = True
+# Create columns for all buttons to place them on the same line and closer
+btn_col1, btn_col2, btn_col3, btn_col4 = st.columns([0.25, 0.25, 0.25, 0.25]) # Adjust ratios as needed for spacing
 
-# Add sorting buttons - Adjusted column ratios to make them closer
-sort_col1, sort_col2, sort_col3, _ = st.columns([0.2, 0.2, 0.2, 0.4]) # 0.4 for empty space
-with sort_col1:
+with btn_col1:
+    if st.button("Generate Questions"):
+        st.session_state.search_triggered = True
+
+with btn_col2:
     if st.button("Sort by Year"):
         st.session_state.sort_by_preference = 'year'
-with sort_col2:
+
+with btn_col3:
     if st.button("Sort by Topic"):
         st.session_state.sort_by_preference = 'topic'
-with sort_col3:
+
+with btn_col4:
     if st.button("Sort by Section"):
         st.session_state.sort_by_preference = 'section'
+
 
 if 'search_triggered' not in st.session_state:
     st.session_state.search_triggered = False
