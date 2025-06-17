@@ -91,6 +91,15 @@ if not simulated_documents:
 # --- Sidebar for Filters ---
 st.sidebar.header("Filter Questions")
 
+# --- Topic Display Name Mapping (moved here for accessibility by expander title) ---
+TOPIC_DISPLAY_NAME_MAP = {
+    "A": "Binomial Expansions",
+    "B": "Exponential and Logarithmic Functions",
+    "C": "Limits",
+    "D": "Differentiation and its Application",
+    "E": "Integration and its Application",
+}
+
 st.sidebar.subheader("Topic(s)")
 selected_topics = []
 # Dynamic creation of topic checkboxes based on unique topics found in image filenames
@@ -106,14 +115,7 @@ if 'topic_checkbox_states' not in st.session_state:
     }
     
 for topic_code in unique_topics:
-    topic_display_name_map = {
-        "A": "Binomial Expansions",
-        "B": "Exponential and Logarithmic Functions",
-        "C": "Limits",
-        "D": "Differentiation and its Application",
-        "E": "Integration and its Application",
-    }
-    display_name = topic_display_name_map.get(topic_code, f"Topic {topic_code}")
+    display_name = TOPIC_DISPLAY_NAME_MAP.get(topic_code, f"Topic {topic_code}") # Use the map
     
     checkbox_value = st.sidebar.checkbox(display_name, value=st.session_state.topic_checkbox_states.get(topic_code, False), key=f"topic_cb_{topic_code}")
     st.session_state.topic_checkbox_states[topic_code] = checkbox_value
@@ -210,12 +212,15 @@ if st.session_state.search_triggered:
     if filtered_documents:
         st.success(f"Found {len(filtered_documents)} question(s) matching your criteria:")
         for i, doc in enumerate(filtered_documents):
-            with st.expander(f"**Topic: {doc['topic']} | Section: {doc['section']} | Year: {doc['year']}**"):
+            # Get the display name for the topic
+            display_topic_name = TOPIC_DISPLAY_NAME_MAP.get(doc['topic'], doc['topic'])
+            
+            with st.expander(f"**Topic: {display_topic_name} | Section: {doc['section']} | Year: {doc['year']}**"):
                 st.markdown(f"**Question {i+1}:**")
                 # Use st.columns to control image width and center it
                 col_left_padding, col_image, col_right_padding = st.columns([0.15, 0.7, 0.15]) 
                 with col_image:
-                    # UPDATED CAPTION: Year - Code
+                    # Caption is Year - Code
                     st.image(doc['image_url'], caption=f"{doc['year']} - {doc['code']}", use_container_width=True)
     else:
         st.warning("No questions found matching your selected criteria. Please adjust your filters.")
