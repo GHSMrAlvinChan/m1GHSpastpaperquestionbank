@@ -201,7 +201,7 @@ if st.session_state.search_triggered:
 
     # Radio buttons for sorting preference, placed below the "Generated Questions" header
     st.session_state.sort_by_preference = st.radio(
-        "Sort questions primarily by:",
+        "Sort Questions by:",
         ('Year', 'Topic', 'Section'),
         index=('Year', 'Topic', 'Section').index(st.session_state.sort_by_preference.capitalize()), # Set initial value from session state
         key='sort_radio_buttons',
